@@ -390,10 +390,14 @@ class RPMObsoletes(Depends):
 
 _SCOREMAP = {}
 def getArchScore(arch, _sm=_SCOREMAP):
-    if arch not in _sm:
-        score = rpm.archscore(arch)
-        _sm[arch] = score
-    return _sm.get(arch, 0)
+    try:
+        rpm.platformscore(arch)
+        if arch not in _sm:
+            score = rpm.archscore(arch)
+            _sm[arch] = score
+        return _sm.get(arch, 0)
+    except AttributeError:
+        return 1
 
 # TODO: Embed color into nameprovides and obsoletes relations.
 _COLORMAP = {"noarch": 0, "x86_64": 2, "ppc64": 2, "s390x": 2, "sparc64": 2}

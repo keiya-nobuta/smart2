@@ -233,6 +233,12 @@ class RPMPackageManager(PackageManager):
         if sysconf.get("rpm-order"):
             ts.order()
         probfilter = rpm.RPMPROB_FILTER_OLDPACKAGE
+        try:
+            # Test for RPM5 function
+            rpm.platformscore("")
+        except AttributeError:
+            probfilter |= rpm.RPMPROB_FILTER_IGNOREARCH
+
         if force or reinstall:
             probfilter |= rpm.RPMPROB_FILTER_REPLACEPKG
             probfilter |= rpm.RPMPROB_FILTER_REPLACEOLDFILES
