@@ -555,6 +555,8 @@ class Transaction(object):
         changeset.set(pkg, INSTALL)
         isinst = changeset.installed
 
+        attempt = sysconf.has("attempt-install", soft=True)
+
         # Remove packages conflicted by this one.
         for cnf in pkg.conflicts:
             for prv in cnf.providedby:
@@ -564,11 +566,16 @@ class Transaction(object):
                     if not isinst(prvpkg):
                         locked[prvpkg] = (LOCKED_CONFLICT_BY, pkg)
                         continue
-                    if prvpkg in locked:
-                        raise Failed, _("Can't install %s: conflicted package "
-                                        "%s is locked") % (pkg, prvpkg)
-                    self._remove(prvpkg, changeset, locked, pending, depth)
-                    pending.append((PENDING_UPDOWN, prvpkg))
+                    if attempt:
+                        del changeset[pkg]
+                        raise Failed, _("Can't install %s: it conflicts with package "
+                                        "%s") % (pkg, prvpkg)
+                    else:
+                        if prvpkg in locked:
+                            raise Failed, _("Can't install %s: conflicted package "
+                                            "%s is locked") % (pkg, prvpkg)
+                        self._remove(prvpkg, changeset, locked, pending, depth)
+                        pending.append((PENDING_UPDOWN, prvpkg))
 
         # Remove packages conflicting with this one.
         for prv in pkg.provides:
@@ -579,12 +586,18 @@ class Transaction(object):
                     if not isinst(cnfpkg):
                         locked[cnfpkg] = (LOCKED_CONFLICT, pkg)
                         continue
-                    if cnfpkg in locked:
+                    if attempt:
+                        del changeset[pkg]
                         raise Failed, _("Can't install %s: it's conflicted by "
-                                        "the locked package %s") \
-                                      % (pkg, cnfpkg)
-                    self._remove(cnfpkg, changeset, locked, pending, depth)
-                    pending.append((PENDING_UPDOWN, cnfpkg))
+                                        "the package %s") \
+                                    % (pkg, cnfpkg)
+                    else:
+                        if cnfpkg in locked:
+                            raise Failed, _("Can't install %s: it's conflicted by "
+                                            "the locked package %s") \
+                                        % (pkg, cnfpkg)
+                        self._remove(cnfpkg, changeset, locked, pending, depth)
+                        pending.append((PENDING_UPDOWN, cnfpkg))
 
         # Remove packages with the same name that can't
         # coexist with this one.
@@ -594,10 +607,15 @@ class Transaction(object):
                 if not isinst(namepkg):
                     locked[namepkg] = (LOCKED_NO_COEXIST, pkg)
                     continue
-                if namepkg in locked:
+                if attempt:
+                    del changeset[pkg]
                     raise Failed, _("Can't install %s: it can't coexist "
                                     "with %s") % (pkg, namepkg)
-                self._remove(namepkg, changeset, locked, pending, depth)
+                else:
+                    if namepkg in locked:
+                        raise Failed, _("Can't install %s: it can't coexist "
+                                        "with %s") % (pkg, namepkg)
+                    self._remove(namepkg, changeset, locked, pending, depth)
 
         # Install packages required by this one.
         for req in pkg.requires + pkg.recommends:
@@ -1176,6 +1194,8 @@ class Transaction(object):
 
         self._policy.runStarting()
 
+        attempt = sysconf.has("attempt-install", soft=True)
+
         try:
             changeset = self._changeset.copy()
             isinst = changeset.installed
@@ -1190,7 +1210,11 @@ class Transaction(object):
                     locked[pkg] = (LOCKED_KEEP, None)
                 elif op is INSTALL:
                     if not isinst(pkg) and pkg in locked:
-                        raise Failed, _("Can't install %s: it's locked") % pkg
+                        if attempt:
+                            iface.warning(_("Can't install %s: it's locked") % pkg)
+                            del changeset[pkg]
+                        else:
+                            raise Failed, _("Can't install %s: it's locked") % pkg
                     changeset.set(pkg, INSTALL)
                     locked[pkg] = (LOCKED_INSTALL, None)
                 elif op is REMOVE:

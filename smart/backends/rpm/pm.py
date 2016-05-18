@@ -241,15 +241,48 @@ class RPMPackageManager(PackageManager):
         cb = RPMCallback(prog, upgradednames)
         cb.grabOutput(True)
         probs = None
+        retry = 0
         try:
             probs = ts.run(cb, None)
         finally:
             del getTS.ts
             cb.grabOutput(False)
+            if probs and sysconf.has("attempt-install", soft=True):
+                def remove_conflict(pkgNEVR):
+                    for key in changeset.keys():
+                        if pkgNEVR == str(key):
+                            del changeset[key]
+                            del pkgpaths[key]
+                            iface.warning("Removing %s due to file %s conflicting with %s" % (pkgNEVR, fname, altNEVR))
+                            break
+
+                retry = 1
+                for prob in probs:
+                    if prob[1][0] == rpm.RPMPROB_NEW_FILE_CONFLICT:
+                        msg = prob[0].split()
+                        fname = msg[1]
+                        pkgNEVR = msg[7]
+                        altNEVR = msg[9]
+                        pkgNEVR = pkgNEVR.rsplit('.', 1)[0] + '@' + pkgNEVR.rsplit('.', 1)[1]
+                        altNEVR = altNEVR.rsplit('.', 1)[0] + '@' + altNEVR.rsplit('.', 1)[1]
+                        remove_conflict(pkgNEVR)
+                    elif prob[1][0] == rpm.RPMPROB_FILE_CONFLICT:
+                        msg = prob[0].split()
+                        fname = msg[1]
+                        pkgNEVR = msg[5]
+                        altNEVR = msg[11]
+                        pkgNEVR = pkgNEVR.rsplit('.', 1)[0] + '@' + pkgNEVR.rsplit('.', 1)[1]
+                        altNEVR = altNEVR.rsplit('.', 1)[0] + '@' + altNEVR.rsplit('.', 1)[1]
+                        remove_conflict(pkgNEVR)
+                    else:
+                        retry = 0
+
             prog.setDone()
-            if probs:
+            if probs and (not retry):
                 raise Error, "\n".join([x[0] for x in probs])
             prog.stop()
+            if retry and len(changeset):
+                self.commit(changeset, pkgpaths)
 
 class RPMCallback:
     def __init__(self, prog, upgradednames):
