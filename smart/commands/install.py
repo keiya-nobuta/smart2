@@ -152,7 +152,7 @@ def main(ctrl, opts):
             for obj in results:
                 for pkg in obj.packages:
                     if pkg.installed:
-                        iface.warning(_("%s (for %s) is already installed")
+                        iface.info(_("%s (for %s) is already installed")
                                       % (pkg, arg))
                         installed = True
                         break
@@ -184,7 +184,7 @@ def main(ctrl, opts):
         for name in names:
             pkg = names[name][0]
             if pkg.installed:
-                iface.warning(_("%s is already installed") % pkg)
+                iface.info(_("%s is already installed") % pkg)
             else:
                 trans.enqueue(pkg, INSTALL)
 

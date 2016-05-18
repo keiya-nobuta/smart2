@@ -278,7 +278,7 @@ class Interpreter(Cmd):
             for name in names:
                 pkg = names[name][0]
                 if pkg.installed:
-                    iface.warning(_("%s is already installed") % pkg)
+                    iface.info(_("%s is already installed") % pkg)
                 else:
                     found = True
                     transaction.enqueue(pkg, INSTALL)
