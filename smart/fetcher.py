@@ -1720,7 +1720,7 @@ class PyCurlHandler(FetcherHandler):
                         handle.setopt(pycurl.OPT_FILETIME, 1)
                         handle.setopt(pycurl.LOW_SPEED_LIMIT, 1)
                         handle.setopt(pycurl.LOW_SPEED_TIME, SOCKETTIMEOUT)
-                        handle.setopt(pycurl.NOPROGRESS, 0)
+                        handle.setopt(pycurl.NOPROGRESS, 1)
                         handle.setopt(pycurl.PROGRESSFUNCTION, progress)
                         handle.setopt(pycurl.WRITEDATA, local)
                         handle.setopt(pycurl.FOLLOWLOCATION, 1)
