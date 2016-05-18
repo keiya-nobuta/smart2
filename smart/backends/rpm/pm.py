@@ -239,6 +239,10 @@ class RPMPackageManager(PackageManager):
         except AttributeError:
             probfilter |= rpm.RPMPROB_FILTER_IGNOREARCH
 
+        if sysconf.get("rpm-ignoresize", False):
+            probfilter |= rpm.RPMPROB_FILTER_DISKNODES
+            probfilter |= rpm.RPMPROB_FILTER_DISKSPACE
+
         if force or reinstall:
             probfilter |= rpm.RPMPROB_FILTER_REPLACEPKG
             probfilter |= rpm.RPMPROB_FILTER_REPLACEOLDFILES
