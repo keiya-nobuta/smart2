@@ -750,6 +750,22 @@ class TextOutput(NullOutput):
             name = str(prvpkg)
         print "       ", "%s (%s)" % (name, prv)
 
+    def showRecommends(self, pkg, rec):
+        if self._firstrecommends:
+            self._firstrecommends = False
+            print " ", _("Recommends:")
+        print "   ", rec
+
+    def showRecommendsProvidedBy(self, pkg, req, prv, prvpkg):
+        if self._firstrecommendsprovidedby:
+            self._firstrecommendsprovidedby = False
+            print "     ", _("Provided By:")
+        if self.opts.hide_version:
+            name = prvpkg.name
+        else:
+            name = str(prvpkg)
+        print "       ", "%s (%s)" % (name, prv)
+
     def showUpgrades(self, pkg, upg):
         if self._firstupgrades:
             self._firstupgrades = False

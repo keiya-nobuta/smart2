@@ -500,6 +500,46 @@ Package_equals(PackageObject *self, PackageObject *other)
         }
     }
 
+    ilen = 0;
+    jlen = 0;
+    for (i = 0; i != PyList_GET_SIZE(self->recommends); i++) {
+        PyObject *item = PyList_GET_ITEM(self->recommends, i);
+        if (!PyObject_IsInstance(item, (PyObject *)&Depends_Type)) {
+            PyErr_SetString(PyExc_TypeError, "Depends instance expected");
+            return NULL;
+        }
+        if (STR(((DependsObject *)item)->name)[0] != '/')
+            ilen += 1;
+    }
+    for (j = 0; j != PyList_GET_SIZE(other->recommends); j++) {
+        PyObject *item = PyList_GET_ITEM(other->recommends, j);
+        if (!PyObject_IsInstance(item, (PyObject *)&Depends_Type)) {
+            PyErr_SetString(PyExc_TypeError, "Depends instance expected");
+            return NULL;
+        }
+        if (STR(((DependsObject *)item)->name)[0] != '/')
+            jlen += 1;
+    }
+    if (ilen != jlen) {
+        ret = Py_False;
+        goto exit;
+    }
+
+    ilen = PyList_GET_SIZE(self->recommends);
+    jlen = PyList_GET_SIZE(other->recommends);
+    for (i = 0; i != ilen; i++) {
+        PyObject *item = PyList_GET_ITEM(self->recommends, i);
+        if (STR(((DependsObject *)item)->name)[0] != '/') {
+            for (j = 0; j != jlen; j++)
+                if (item == PyList_GET_ITEM(other->recommends, j))
+                    break;
+            if (j == jlen) {
+                ret = Py_False;
+                goto exit;
+            }
+        }
+    }
+
 exit:
     Py_INCREF(ret);
     return ret;
@@ -1813,6 +1853,59 @@ Loader_buildPackage(LoaderObject *self, PyObject *args)
         }
     }
 
+    /* if recargs: */
+    if (recargs) {
+        int i = 0;
+        int len = PyList_GET_SIZE(recargs);
+        /* pkg.recommends = [] */
+        Py_DECREF(pkgobj->recommends);
+        pkgobj->recommends = PyList_New(len);
+        /* for args in recargs: */
+        for (; i != len; i++) {
+            PyObject *args = PyList_GET_ITEM(recargs, i);
+            DependsObject *recobj;
+            PyObject *rec;
+            
+            if (!PyTuple_Check(args)) {
+                PyErr_SetString(PyExc_TypeError,
+                                "Item in recargs is not a tuple");
+                return NULL;
+            }
+
+            /* rec = cache._objmap.get(args) */
+            rec = PyDict_GetItem(cache->_objmap, args);
+            recobj = (DependsObject *)rec;
+
+            /* if not rec: */
+            if (!rec) {
+                if (!PyTuple_Check(args) || PyTuple_GET_SIZE(args) < 2) {
+                    PyErr_SetString(PyExc_ValueError, "Invalid recargs tuple");
+                    return NULL;
+                }
+                /* rec = args[0](*args[1:]) */
+                callargs = PyTuple_GetSlice(args, 1, PyTuple_GET_SIZE(args));
+                rec = PyObject_CallObject(PyTuple_GET_ITEM(args, 0), callargs);
+                Py_DECREF(callargs);
+                if (!rec) return NULL;
+                recobj = (DependsObject *)rec;
+
+                /* cache._objmap[args] = rec */
+                PyDict_SetItem(cache->_objmap, args, rec);
+                Py_DECREF(rec);
+
+                /* cache._recommends.append(rec) */
+                PyList_Append(cache->_recommends, rec);
+            }
+
+            /* relpkgs.append(rec.packages) */
+            PyList_Append(relpkgs, recobj->packages);
+
+            /* pkg.recommends.append(rec) */
+            Py_INCREF(rec);
+            PyList_SET_ITEM(pkgobj->recommends, i, rec);
+        }
+    }
+
     /* if upgargs: */
     if (upgargs) {
         int i = 0;
@@ -2592,6 +2685,16 @@ Cache_reset(CacheObject *self, PyObject *args)
         if (PyList_Check(reqobj->providedby))
             LIST_CLEAR(reqobj->providedby);
     }
+    len = PyList_GET_SIZE(self->_recommends);
+    for (i = 0; i != len; i++) {
+        DependsObject *reqobj;
+        PyObject *req;
+        req = PyList_GET_ITEM(self->_recommends, i);
+        reqobj = (DependsObject *)req;
+        LIST_CLEAR(reqobj->packages);
+        if (PyList_Check(reqobj->providedby))
+            LIST_CLEAR(reqobj->providedby);
+    }
     len = PyList_GET_SIZE(self->_upgrades);
     for (i = 0; i != len; i++) {
         DependsObject *upgobj;
@@ -2804,6 +2907,30 @@ Cache__reload(CacheObject *self, PyObject *args)
                                                        NULL);
                             if (!args) return NULL;
                             PyDict_SetItem(objmap, args, req);
+                            Py_DECREF(args);
+                        }
+                    }
+                }
+
+                /*
+                   for rec in pkg.recommends:
+                       rec.packages.append(pkg)
+                       if rec not in recommends:
+                           recommends[rec] = True
+                           objmap[rec.getInitArgs()] = rec
+                */
+                if (PyList_Check(pkg->recommends)) {
+                    klen = PyList_GET_SIZE(pkg->recommends);
+                    for (k = 0; k != klen; k++) {
+                        PyObject *rec = PyList_GET_ITEM(pkg->recommends, k);
+                        PyList_Append(((DependsObject *)rec)->packages,
+                                      (PyObject *)pkg);
+                        if (!PyDict_GetItem(recommends, rec)) {
+                            PyDict_SetItem(recommends, rec, Py_True);
+                            args = PyObject_CallMethod(rec, "getInitArgs",
+                                                       NULL);
+                            if (!args) return NULL;
+                            PyDict_SetItem(objmap, args, rec);
                             Py_DECREF(args);
                         }
                     }
@@ -3097,6 +3224,47 @@ Cache_linkDeps(CacheObject *self, PyObject *args)
         Py_DECREF(seq);
     }
 
+    /* recnames = {} */
+    recnames = PyDict_New();
+    /* for rec in self._recommends: */
+    len = PyList_GET_SIZE(self->_recommends);
+    for (i = 0; i != len; i++) {
+        PyObject *rec = PyList_GET_ITEM(self->_recommends, i);
+
+        /* for name in rec.getMatchNames(): */
+        PyObject *names = PyObject_CallMethod(rec, "getMatchNames", NULL);
+        PyObject *seq = PySequence_Fast(names, "getMatchNames() returned "
+                                               "non-sequence object");
+        int nameslen;
+        if (!seq) return NULL;
+        nameslen = PySequence_Fast_GET_SIZE(seq);
+        for (j = 0; j != nameslen; j++) {
+            PyObject *name = PySequence_Fast_GET_ITEM(seq, j);
+            
+            /* lst = recnames.get(name) */
+            lst = PyDict_GetItem(recnames, name);
+
+            /* 
+               if lst:
+                   lst.append(rec)
+               else:
+                   recnames[name] = [rec]
+            */
+            if (lst) {
+                PyList_Append(lst, rec);
+            } else {
+                lst = PyList_New(1);
+                Py_INCREF(rec);
+                PyList_SET_ITEM(lst, 0, rec);
+                PyDict_SetItem(recnames, name, lst);
+                Py_DECREF(lst);
+            }
+        }
+
+        Py_DECREF(names);
+        Py_DECREF(seq);
+    }
+
     /* upgnames = {} */
     upgnames = PyDict_New();
     /* for upg in self._upgrades: */
@@ -3230,6 +3398,56 @@ Cache_linkDeps(CacheObject *self, PyObject *args)
                         PyList_SET_ITEM(_lst, 0, (PyObject *)req);
                         Py_DECREF(prv->requiredby);
                         prv->requiredby = _lst;
+                    }
+                }
+                Py_DECREF(ret);
+            }
+        }
+
+        /* lst = recnames.get(prv.name) */
+        lst = PyDict_GetItem(recnames, prv->name);
+
+        /* if lst: */
+        if (lst) {
+            /* for rec in lst: */
+            int reclen = PyList_GET_SIZE(lst);
+            for (j = 0; j != reclen; j++) {
+                DependsObject *rec = (DependsObject *)PyList_GET_ITEM(lst, j);
+                /* if rec.matches(prv): */
+                PyObject *ret = PyObject_CallMethod((PyObject *)rec, "matches",
+                                                    "O", (PyObject *)prv);
+                if (!ret) return NULL;
+                if (PyObject_IsTrue(ret)) {
+                    /*
+                       if rec.providedby:
+                           rec.providedby.append(prv)
+                       else:
+                           rec.providedby = [prv]
+                    */
+                    if (PyList_Check(rec->providedby)) {
+                        PyList_Append(rec->providedby, (PyObject *)prv);
+                    } else {
+                        PyObject *_lst = PyList_New(1);
+                        Py_INCREF(prv);
+                        PyList_SET_ITEM(_lst, 0, (PyObject *)prv);
+                        Py_DECREF(rec->providedby);
+                        rec->providedby = _lst;
+                    }
+
+                    /*
+                       if prv.recommendedby:
+                           prv.recommendedby.append(prv)
+                       else:
+                           prv.recommendedby = [prv]
+                    */
+                    if (PyList_Check(prv->recommendedby)) {
+                        PyList_Append(prv->recommendedby, (PyObject *)rec);
+                    } else {
+                        PyObject *_lst = PyList_New(1);
+                        Py_INCREF(rec);
+                        PyList_SET_ITEM(_lst, 0, (PyObject *)rec);
+                        Py_DECREF(prv->recommendedby);
+                        prv->recommendedby = _lst;
                     }
                 }
                 Py_DECREF(ret);
@@ -3802,6 +4020,21 @@ Cache__setstate__(CacheObject *self, PyObject *state)
                 DependsObject *reqobj = (DependsObject *)req;
                 PyList_Append(reqobj->packages, pkg);
                 PyDict_SetItem(requires, req, Py_True);
+            }
+        }
+
+        /*
+           for rec in pkg.recommends:
+               rec.packages.append(pkg)
+               recommends[rec] = True
+        */
+        if (PyList_Check(pkgobj->recommends)) {
+            jlen = PyList_GET_SIZE(pkgobj->recommends);
+            for (j = 0; j != jlen; j++) {
+                PyObject *rec = PyList_GET_ITEM(pkgobj->recommends, j);
+                DependsObject *recobj = (DependsObject *)rec;
+                PyList_Append(recobj->packages, pkg);
+                PyDict_SetItem(recommends, rec, Py_True);
             }
         }
 
