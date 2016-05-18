@@ -651,13 +651,14 @@ class Transaction(object):
 
             if not prvpkgs:
                 # No packages provide it at all. Give up.
+
+                reasons = []
+                for prv in req.providedby:
+                    for prvpkg in prv.packages:
+                        lockedres = lockedpkgs.get(prvpkg, None)
+                        if lockedres:
+                            reasons.append(lock_reason(prvpkg, lockedres))
                 if reqrequired:
-                    reasons = []
-                    for prv in req.providedby:
-                        for prvpkg in prv.packages:
-                            lockedres = lockedpkgs.get(prvpkg, None)
-                            if lockedres:
-                                reasons.append(lock_reason(prvpkg, lockedres))
                     if reasons:
                         raise Failed, _("Can't install %s: unable to install provider for %s:\n    %s") % \
                                 (pkg, req, '\n    '.join(reasons))
@@ -665,6 +666,10 @@ class Transaction(object):
                         raise Failed, _("Can't install %s: no package provides %s") % \
                                 (pkg, req)
                 else:
+                    if reasons:
+                        iface.warning(_("Can't install %s: unable to install provider for %s:\n    %s") % \
+                                (pkg, req, '\n    '.join(reasons)))
+
                     # It's only a recommend, skip
                     continue
 
@@ -846,6 +851,14 @@ class Transaction(object):
         isinst = changeset.installed
         getweight = self._policy.getWeight
 
+        attempt = sysconf.has("attempt-install", soft=True)
+
+        def handle_failure(msg):
+            if attempt:
+                iface.warning(msg)
+            else:
+                raise Failed, msg
+
         updown = []
         while pending:
             item = pending.pop(0)
@@ -870,8 +883,9 @@ class Transaction(object):
 
                 if not prvpkgs:
                     # No packages provide it at all. Give up.
-                    raise Failed, _("Can't install %s: no package "
-                                    "provides %s") % (pkg, req)
+                    handle_failure(_("Can't install %s: no package "
+                                    "provides %s") % (pkg, req))
+                    continue
 
                 if len(prvpkgs) > 1:
                     # More than one package provide it. We use _pending here,
@@ -894,9 +908,10 @@ class Transaction(object):
                                                  keeporder, cs, lk))
                             keeporder += 0.000001
                     if not alternatives:
-                        raise Failed, _("Can't install %s: all packages "
+                        handle_failure(_("Can't install %s: all packages "
                                         "providing %s failed to install:\n%s")\
-                                      % (pkg, req,  "\n".join(failures))
+                                      % (pkg, req,  "\n".join(failures)))
+                        continue
                     alternatives.sort()
                     changeset.setState(alternatives[0][1])
                     if len(alternatives) == 1:
@@ -954,18 +969,20 @@ class Transaction(object):
 
                     for reqpkg in reqpkgs:
                         if reqpkg in locked and isinst(reqpkg):
-                            raise Failed, _("Can't remove %s: requiring "
+                            handle_failure(_("Can't remove %s: requiring "
                                             "package %s is locked") % \
-                                          (pkg, reqpkg)
+                                          (pkg, reqpkg))
+                            continue
                     for reqpkg in reqpkgs:
                         # We check again, since other actions may have
                         # changed their state.
                         if not isinst(reqpkg):
                             continue
                         if reqpkg in locked:
-                            raise Failed, _("Can't remove %s: requiring "
+                            handle_failure(_("Can't remove %s: requiring "
                                             "package %s is locked") % \
-                                          (pkg, reqpkg)
+                                          (pkg, reqpkg))
+                            continue
                         self._remove(reqpkg, changeset, locked,
                                      pending, depth)
                     continue
@@ -978,12 +995,14 @@ class Transaction(object):
                 try:
                     for reqpkg in reqpkgs:
                         if reqpkg in locked and isinst(reqpkg):
-                            raise Failed, _("%s is locked") % reqpkg
+                            handle_failure(_("%s is locked") % reqpkg)
+                            continue
                     for reqpkg in reqpkgs:
                         if not cs.installed(reqpkg):
                             continue
                         if reqpkg in lk:
-                            raise Failed, _("%s is locked") % reqpkg
+                            handle_failure(_("%s is locked") % reqpkg)
+                            continue
                         self._remove(reqpkg, cs, lk, None, depth)
                 except Failed, e:
                     failures.append(unicode(e))
@@ -991,9 +1010,10 @@ class Transaction(object):
                     alternatives.append((getweight(cs), cs, lk))
 
                 if not alternatives:
-                    raise Failed, _("Can't install %s: all packages providing "
+                    handle_failure(_("Can't install %s: all packages providing "
                                     "%s failed to install:\n%s") \
-                                  % (pkg, prv,  "\n".join(failures))
+                                  % (pkg, prv,  "\n".join(failures)))
+                    continue
 
                 alternatives.sort()
                 changeset.setState(alternatives[0][1])
@@ -1246,6 +1266,7 @@ class Transaction(object):
                             changeset.setRequested(pkg, True)
                     except Failed, e:
                         if sysconf.has("attempt-install", soft=True):
+                            iface.warning(_("Can't install %s: %s") % (pkg, str(e)))
                             if pkg in changeset:
                                 del changeset[pkg]
                             continue
