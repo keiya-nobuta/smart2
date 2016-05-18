@@ -876,9 +876,13 @@ class Control(object):
         objects = []
 
         # If we find packages with exactly the given
-        # name or name-version, use them.
-        for pkg in self._cache.getPackages(s):
-            if pkg.name == s or "%s-%s" % (pkg.name, pkg.version) == s:
+        # name, name-version, or name@arch, use them.
+        s_name = s
+        if "@" in s:
+            s_name = s.split("@")[0]
+        for pkg in self._cache.getPackages(s_name):
+            if pkg.name == s or "%s-%s" % (pkg.name, pkg.version) == s \
+                    or "%s@%s" % (pkg.name, pkg.version.split('@')[1]) == s:
                 objects.append((1.0, pkg))
          
         if not objects:
