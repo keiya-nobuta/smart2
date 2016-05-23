@@ -20,6 +20,8 @@
 # along with Smart Package Manager; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
+# Copyright (C) 2016 FUJITSU LIMITED
+#
 import tempfile
 import sys, os
 import codecs
@@ -338,7 +340,14 @@ class RPMCallback:
 
     def _process_rpmout(self, tobuffer=False):
         if self.rpmout:
-            output = self.rpmout.read()
+            try:
+                output = self.rpmout.read()
+            except UnicodeDecodeError:
+                #in ubuntu ,the UnicodeDecodeError always occure,no better method,just return
+                #to improve
+                #print "UnicodeDecodeError!!"
+                return
+
             if output or not tobuffer and self.rpmoutbuffer:
                 if tobuffer:
                     self.rpmoutbuffer += output
