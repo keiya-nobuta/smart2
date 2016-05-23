@@ -20,6 +20,8 @@
 # along with Smart Package Manager; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
+# Copyright (C) 2016 FUJITSU LIMITED
+#
 import sys
 if sys.version_info < (2, 3):
     sys.exit("error: Python 2.3 or later required")
@@ -83,6 +85,8 @@ def parse_options(argv):
     parser.add_option("--config-file", metavar=_("FILE"),
                       help=_("configuration file "
                              "(default is <data-dir>/config)"))
+    parser.add_option("--rootfs-dir", metavar=_("DIR"),
+                      help=_("rootfs directory"))
     parser.add_option("--data-dir", metavar=_("DIR"),
                       help=_("data directory (default is %s)") % DATADIR)
     parser.add_option("--log-level", metavar=_("LEVEL"),
@@ -159,8 +163,13 @@ def main(argv):
     exitcode = 1
     try:
         opts = parse_options(argv)
+        if opts.rootfs_dir:
+            datadir = opts.rootfs_dir + DATADIR
+        else:
+            datadir = opts.data_dir
+
         ctrl = init(command=opts.command, argv=opts.argv,
-                    datadir=opts.data_dir, configfile=opts.config_file,
+                    datadir=datadir, configfile=opts.config_file,
                     gui=opts.gui, shell=opts.shell, quiet=opts.quiet,
                     interface=opts.interface, forcelocks=opts.ignore_locks,
                     loglevel=opts.log_level)
