@@ -6,14 +6,14 @@ PKGS_DIR=$2
 #Check the parameters
 if [ -z "$2" -o $1 = "--help" -o $1 = "-h" -o $1 = "-H" ]; then
     echo ""
-    echo "usage:     . $0 rootfs_dir packages_dir "
+    echo "usage:     . enviroment-smart.sh rootfs_dir packages_dir "
     echo ""
-    echo "#For example: If you want to install rpms from x86_64"
-    echo "     #ls /home/ubinux/x86_64_ubinuxv16_r001_rpm/"
-    echo "     all  ubinux_x86_64  x86_64"
+    echo "#For example: If you want to install rpms from x86"
+    echo "     #ls /home/test/x86_rpm/"
+    echo "     all  i586  qemux86 "
     echo ""
     echo "#You should use the following command to set your smart environment"
-    echo "      . $0 /home/ubinux/x86_64_ubinuxv16_rootfs /home/ubinux/x86_64_ubinuxv16_r001_rpm "
+    echo "      . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm "
     echo ""
     exit 0
 fi
