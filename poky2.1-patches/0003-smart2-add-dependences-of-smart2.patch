@@ -1,0 +1,78 @@
+From 0b304585a2719d5a78c2b6d0f051a81cac8c514e Mon Sep 17 00:00:00 2001
+From: Lei Maohui <leimaohui@cn.fujitsu.com>
+Date: Tue, 31 May 2016 14:24:09 +0900
+Subject: [PATCH 3/3] smart2:add dependences of smart2
+
+Signed-off-by: Lei Maohui <leimaohui@cn.fujitsu.com>
+---
+ meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb | 1 +
+ meta/recipes-extended/newt/libnewt-python_0.52.18.bb               | 3 ++-
+ meta/recipes-extended/newt/libnewt_0.52.18.bb                      | 7 +++++--
+ meta/recipes-extended/slang/slang_2.2.4.bb                         | 2 +-
+ 4 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb b/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb
+index 0c6a530..0f25d00 100644
+--- a/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb
++++ b/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb
+@@ -24,6 +24,7 @@ RDEPENDS_${PN} = "\
+     nativesdk-makedevs \
+     nativesdk-smartpm \
+     nativesdk-postinst-intercept \
++    nativesdk-libnewt-python \
+     "
+ 
+ RDEPENDS_${PN}_darwin = "\
+diff --git a/meta/recipes-extended/newt/libnewt-python_0.52.18.bb b/meta/recipes-extended/newt/libnewt-python_0.52.18.bb
+index ba04757..028c987 100644
+--- a/meta/recipes-extended/newt/libnewt-python_0.52.18.bb
++++ b/meta/recipes-extended/newt/libnewt-python_0.52.18.bb
+@@ -3,6 +3,7 @@ require recipes-extended/newt/libnewt_${PV}.bb
+ SUMMARY .= " - python"
+ DEPENDS = "libnewt python"
+ RDEPENDS_${PN} += "python-core"
++DEPENDS_class-nativesdk = "libnewt-nativesdk"
+ 
+ inherit pythonnative python-dir
+ 
+@@ -25,4 +26,4 @@ PACKAGES_remove = "whiptail"
+ 
+ FILES_${PN} = "${PYTHON_SITEPACKAGES_DIR}/*"
+ 
+-BBCLASSEXTEND = "native"
++BBCLASSEXTEND = "native nativesdk"
+diff --git a/meta/recipes-extended/newt/libnewt_0.52.18.bb b/meta/recipes-extended/newt/libnewt_0.52.18.bb
+index 9a2964b..af8bc1c 100644
+--- a/meta/recipes-extended/newt/libnewt_0.52.18.bb
++++ b/meta/recipes-extended/newt/libnewt_0.52.18.bb
+@@ -15,7 +15,10 @@ LICENSE = "LGPLv2"
+ LIC_FILES_CHKSUM = "file://COPYING;md5=5f30f0716dfdd0d91eb439ebec522ec2"
+ 
+ # slang needs to be >= 2.2
+-DEPENDS = "slang popt"
++DEPENDS = ""
++DEPENDS_class-target = "slang popt"
++DEPENDS_class-native = "slang-native popt-native"
++DEPENDS_class-nativesdk = "slang-nativesdk popt-nativesdk"
+ 
+ SRC_URI = "https://fedorahosted.org/releases/n/e/newt/newt-${PV}.tar.gz \
+            file://remove_slang_include.patch \
+@@ -56,4 +59,4 @@ do_compile_prepend() {
+ 
+ FILES_whiptail = "${bindir}/whiptail"
+ 
+-BBCLASSEXTEND = "native"
++BBCLASSEXTEND = "native nativesdk"
+diff --git a/meta/recipes-extended/slang/slang_2.2.4.bb b/meta/recipes-extended/slang/slang_2.2.4.bb
+index 237e9f2..ae52b1b 100644
+--- a/meta/recipes-extended/slang/slang_2.2.4.bb
++++ b/meta/recipes-extended/slang/slang_2.2.4.bb
+@@ -51,4 +51,4 @@ FILES_${PN} += "${libdir}/${BPN}/v2/modules/ ${datadir}/slsh/"
+ 
+ PARALLEL_MAKE = ""
+ 
+-BBCLASSEXTEND = "native"
++BBCLASSEXTEND = "native nativesdk"
+-- 
+1.8.4.2
+
