@@ -1,0 +1,213 @@
+1. Introduction
+
+  Smart2 is a package manager that based on smart.Smart2 support all the 
+  funtions of smart.In addition, smart2 has new features.
+  
+  --------------
+  New Features
+  --------------
+
+  - A new interface named "tgui" can show you a gui on your character 
+    terminal.
+  - Supports customizing your target rootfs on host development machine.
+
+  This manual will focus on how to use smart2 on manage your target packages 
+  of target on host development machine.
+  
+  Note
+  More informations about smart, please reference to doc/ or http://labix.org/smart/howto.
+   
+2. How to get smart2
+  
+  Smart2 now is managed on Github.You can get smart2 by the following command:
+  https://github.com/ubinux/smart2.git
+
+3. How to manage your packages for your local system
+  As smart, smart2 can be used to manage packages for your local system.This 
+  section will tell you how.
+  
+  3.1 Dependencies
+    
+    Before install smart2, you have to install the dependencies.
+    - The dependencies same as smart
+	
+      The dependencies of smart are also necessary for smart2.Please refrence 
+	  to doc/ or http://labix.org/smart/howto to get the list of dependencies.
+	
+    - New dependencies of smart2
+	
+      :Graphic Interface:
+      The "tgui" graphic interface depends on snack module comes from python-newt
+   
+  3.1 build & install smart2 on your local system
+   
+    - Install dependencies of smart2. 
+	
+    - Build and install smart2 as following:
+      Cd into smart2 directory and execute the following commands as root:
+      -------------------------------------------------------------------
+      # python setup.py build
+      # python setup.py install
+      -------------------------------------------------------------------
+      Or you can use the supplied Makefile:
+      -------------------------------------------------------------------
+      # make
+      # make install
+      -------------------------------------------------------------------
+      OK, now you can use smart2 to manage packages for your local system.
+      Smart2 supports all the functions of smart.You can get Users Guide from 
+      doc/ or http://labix.org/smart/howto.
+
+4. How to manage the packages of target by smart2
+  
+  Compare to smart, smart2 is good at managing packages sources of embedded 
+  system.This section will tell you how to do.
+
+  Step 1 - Add smart2 into SDK
+	
+    Add smart2 into your toolchain as the other cross compile tools such gcc, rpm and so on. 
+    The methods are different according to different development systems.
+	
+    For example, smart2 can be added into poky, please reforence to section 5 - "Add smart2 
+    into poky" to get how.
+	
+  Step 2 - Set the cross-development environment on your development machine.
+	
+    Set up your cross-development environment on your development machine.The 
+    methods are different according to different development systems.
+
+    For example, if your embedded system is created by Yocto, the method to establish 
+    necessary environment variables looks like as following:
+      -------------------------------------------------------------------
+      $. /opt/poky/2.1/environment-setup-i586-poky-linux
+      -------------------------------------------------------------------
+
+Step 3 -  Source smart2 environment script.
+	
+    Before use smart2, it is necessary to establish an environment for smart2.
+	  
+    The environment script aims to :
+    - build pseudo environment
+    - configure DB settings for packages sources(e.g. rpm,deb)
+    - configure smart2 settings for packages sources(e.g. rpm,deb)
+    - add channels
+
+    There is an example environment script named enviroment-smart.sh suits rpm 
+    packages that created by Yocto.
+	
+    You can get how to establish a environment from help command:
+      -------------------------------------------------------------------
+      $ enviroment-smart.sh --help
+      -------------------------------------------------------------------
+	  
+    For example,you can install packages for x86 on your host system:
+      -------------------------------------------------------------------
+      $ . enviroment-smart.sh /home/x86/x86-rootfs /home/x86/rpm
+      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart query --name=busybox
+      Loading cache...
+      Updating cache...                                                    
+      ################################################################################################ [100%]
+
+      busybox-1.24.1-r0@i586
+      busybox-dbg-1.24.1-r0@i586
+      busybox-dev-1.24.1-r0@i586
+      busybox-hwclock-1.24.1-r0@i586
+      busybox-ptest-1.24.1-r0@i586
+      busybox-syslog-1.24.1-r0@i586
+      busybox-udhcpc-1.24.1-r0@i586
+      busybox-udhcpd-1.24.1-r0@i586
+      $ 
+      -------------------------------------------------------------------
+	  
+    After source the environment script, smart2 can manage the packages that 
+    specified by enviroment-smart.sh.
+
+Usage1 - commands same as smart
+	  
+    Now, you can use smart commands to manage your target packages with 
+    "--data-dir" options. 
+	  
+    For example:
+    Smart Install/Reinstall
+      -------------------------------------------------------------------
+      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart install pkgname
+      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart install '*kgna*'
+      -------------------------------------------------------------------
+    Smart Query and Information Commands
+     -------------------------------------------------------------------
+      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart search ldap
+      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart query pkgname
+      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart query '*kgnam*'
+     -------------------------------------------------------------------	  
+    More commands please reference to doc/ or http://labix.org/smart/howto.
+
+  Usage2 - Create rootfs for target
+
+    Compart to smart, smart2 support a new interface named "tgui" which can 
+    help you to customize your rootfs under character terminal of your 
+    development machine.
+	  
+    You will enter the tgui insterface with the option "--interface=tgui".
+    For example:
+      -------------------------------------------------------------------
+      $ smart --rootfs-dir=/home/x86/x86-rootfs  --interface=tgui
+      -------------------------------------------------------------------
+		
+    Beside "tgui", you also can manage packages by command line with the option 
+    "--rootfs-dir".
+    For example:
+      -------------------------------------------------------------------
+      $ smart --rootfs-dir=/home/x86/x86-rootfs install pkgname
+      $ smart --rootfs-dir=/home/x86/x86-rootfs remove pkgname
+      $ smart --rootfs-dir=/home/x86/x86-rootfs search pkgname
+      -------------------------------------------------------------------
+	  		
+    Note
+    To make sure the files in rootfs have correct uid and gid, notice that:
+    * When rootfs is finished, please compress it into a tarball in the
+      current terminal.For example:
+      -------------------------------------------------------------------
+      $ cd /home/x86/
+      $ tar jcvf x86-rootfs.tar.bz2 x86-rootfs
+      -------------------------------------------------------------------
+    * And when unpack rootfs on other terminal, please use sudo command with
+      "--numeric-owner" option.For example:
+      ------------------------------------------------------------------
+      $ sudo tar vxf x86-rootfs.tar.bz2 --numeric-owner
+      -------------------------------------------------------------------
+
+5. Add smart2 into poky
+
+   Smart2 can be added into poky.This section will tell you how to do.
+    
+  5.1 Get poky
+  
+    Clone the poky Git repository or download and unpack a Yocto Project release.
+    Please reference to https://www.yoctoproject.org/.
+	  
+  5.2 Add smart2 into poky instead of smart
+  
+    Use the paches in https://github.com/ubinux/smart2/tree/master/poky-patches	
+    to poky.
+      -------------------------------------------------------------------
+      $ ls poky2.1-patches/
+      0001-rpm-The-config-file-of-rpm-will-be-installed-into-SD.patch  
+      0002-python-smartpm-change-smart-to-smart2.patch  
+      0003-smart2-add-dependences-of-smart2.patch
+      -------------------------------------------------------------------
+	  
+      Note
+      These patches are for the newest version(2.1) of poky.If you want to use
+      they for another version of poky, please modified files of poky manually 
+      reference to these patches.
+		
+  5.3 Build the toolchain
+  
+    Using poky,build toolchain that includes smart2 as following:
+      -------------------------------------------------------------------
+      # bitbake meta-toolchain
+      -------------------------------------------------------------------
+    After building,a *.sh installation script will be generated.
+	
+    Note 
+    Please make sure your toolchain matches your target architecture.
