@@ -8,14 +8,26 @@ PKGS_DIR=$2
 if [ -z "$2" -o $1 = "--help" -o $1 = "-h" -o $1 = "-H" ]; then
     echo ""
     echo "usage:     . enviroment-smart.sh rootfs_dir packages_dir "
+    echo "Add channels from the sources in packages_dir,and build the enviroment for target rootfs directory."
     echo ""
-    echo "#For example: If you want to install rpms from x86"
-    echo "     #ls /home/test/x86_rpm/"
+    echo "#For example"
+    echo "If you have packages of target(e.g. x86 packages created by Yocto):"
+    echo "     \$ ls /home/test/x86_rpm/"
     echo "     all  i586  qemux86"
+    echo "And you want to manage(e.g. install/remove/search) these packages on your host machain."
+    echo "First, you should use the following command to set up your smart environment"
+    echo "     \$ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm "
+    echo "Then, you can manange target packages for target rootfs:"
+    echo "     \$ smart --rootfs-dir=/home/test/x86-rootfs install pkgname"
+    echo "     \$ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname"
+    echo "     \$ smart --rootfs-dir=/home/test/x86-rootfs query '*kgnam*'"
+    echo "Or cutomize your rootfs:"
+    echo "     \$ smart --rootfs-dir=/home/test/x86-rootfs --interface=tgui"
     echo ""
-    echo "#You should use the following command to set your smart environment"
-    echo "      . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm "
-    echo ""
+    echo "Note"
+    echo "Smart mananges packages by repodate, make sure your repodate is correct with your packages."
+    echo "    \$ ls /home/test/x86_rpm/all/repodata"
+    echo "       filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml"
     exit 0
 fi
 
@@ -207,9 +219,9 @@ EOF
 
 chmod 0755 $WORKDIR/scriptlet_wrapper
 $SMART config --set rpm-extra-macros._cross_scriptlet_wrapper="$WORKDIR/scriptlet_wrapper" 
-echo $?
+#echo $?
 $SMART config --show
-echo $?
+#echo $?
 echo "$SMART config --show" 
 
 #$SMART clean
