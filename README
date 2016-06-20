@@ -7,14 +7,11 @@
     New Features
     --------------
 
-    - A new interface named "tgui" can show you a gui on your character 
-    terminal.
+    - A new interface named "tgui" can show you a gui on your character terminal.
     - Supports customizing your target rootfs on host development machine.
    
-    ---------------------------------------------------------------------------
-    NOTE:
+    Note
     More informations about smart, please reference to doc/ or http://labix.org/smart/howto.
-    ---------------------------------------------------------------------------
    
 2. How to get smart2
   
@@ -33,14 +30,12 @@
     2) Dependencies for smart2 new features.
         - python-newt:  the snack module depended by "tgui" graphic interface.
 
-    ---------------------------------------------------------------------------
-    NOTE:
+    Note
         In some cases,  (e.g. Cross-Platform),  maybe you can not use the above command
         which belongs to host directly. You should build a special one for your target-platform,
         and make sure it's available in your toolchain for Cross-Platform.
 
         E.g, for Yocto user, you should install the toolchain firstly
-    ---------------------------------------------------------------------------
 
 3.2 Installation
 
@@ -55,8 +50,7 @@
     # make install
     -------------------------------------------------------------------
 
-    -----------------------------------------------------------------------
-    NOTE:
+    Note
         After install you have to change the interpreter from "#!/usr/bin/python" to 
         "#!/usr/bin/env python" in your smart2 command.
     
@@ -65,7 +59,6 @@
         $ cat /opt/bin/smart
         #!/usr/bin/env python
         ......
-    -----------------------------------------------------------------------   
 
 3.3 Global Setting
 
@@ -83,7 +76,7 @@
         # export RPM_LOCALEDIR=/usr/share/locale
         -----------------------------------------------------------------------
 
-        NOTE:
+        Note
             In Cross-Platform case,  maybe you should customize these variable.
             E.g., for Yocto user, you should set them as following.
             -------------------------------------------------------------------
@@ -133,17 +126,16 @@
              $ smart --rootfs-dir=/home/test/x86-rootfs --interface=tgui
 
         Note
-        Smart mananges packages by repodate, make sure your repodate is correct with your packages.
-             $ ls /home/test/x86_rpm/all/repodata
-             filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml
+            Smart mananges packages by repodate, make sure your repodate is correct with your packages.
+            $ ls /home/test/x86_rpm/all/repodata
+            filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml
 
         -------------------------------------------------------------------
 
     4.2 Create rootfs for Target-Platform
         
         Compare to smart, smart2 supports a new interface named "tgui" which can 
-        help you to customize your rootfs under character terminal in your 
-        development machine.
+        help you to customize your rootfs under character terminal in your development machine.
 	  
         You will enter the tgui insterface with the option "--interface=tgui".
         For example:
@@ -229,13 +221,13 @@
             ------------------------------------------------------------------------------------------
 
             Note
-           [] Means the package has not been selected and installed. If you want to install it, you can 
-              select it by pressing enter.
-           [*] Means the package has been selcted and will be installed. If you don't want to install it,
-              you can cancel by pressing enter.
-           [I] Means the package has been installed in your rootfs. You can't select/unselect it in tgui.
-              If you want to uninstall it.Please use the following command after exiting tgui.
-              $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
+            [] Means the package has not been selected and installed. If you want to install it, you can 
+               select it by pressing enter.
+            [*] Means the package has been selcted and will be installed. If you don't want to install it,
+               you can cancel by pressing enter.
+            [I] Means the package has been installed in your rootfs. You can't select/unselect it in tgui.
+               If you want to uninstall it.Please use the following command after exiting tgui.
+               $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
 		   
         4) cutomize packages type
             You can select the package type that you want to install into rootfs.
@@ -266,6 +258,7 @@
             | -------------------------------------------------------------------------------------- |
             | SPACE/ENTER:select/unselect  N:Next  B:Back  I:Info  X:eXit                            |
             ------------------------------------------------------------------------------------------
+
             Note
                 You can get details about the package type by pressing "I" or "i".
 	
