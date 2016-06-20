@@ -1,213 +1,329 @@
-1. Introduction
+1. Overview
 
-  Smart2 is a package manager that based on smart.Smart2 support all the 
-  funtions of smart.In addition, smart2 has new features.
+    Smart2 is a package manager that based on smart. Smart2 support all the 
+    funtions of smart. In addition, smart2 has some new features.
   
-  --------------
-  New Features
-  --------------
+    --------------
+    New Features
+    --------------
 
-  - A new interface named "tgui" can show you a gui on your character 
+    - A new interface named "tgui" can show you a gui on your character 
     terminal.
-  - Supports customizing your target rootfs on host development machine.
-
-  This manual will focus on how to use smart2 on manage your target packages 
-  of target on host development machine.
-  
-  Note
-  More informations about smart, please reference to doc/ or http://labix.org/smart/howto.
+    - Supports customizing your target rootfs on host development machine.
+   
+    ---------------------------------------------------------------------------
+    NOTE:
+    More informations about smart, please reference to doc/ or http://labix.org/smart/howto.
+    ---------------------------------------------------------------------------
    
 2. How to get smart2
   
-  Smart2 now is managed on Github.You can get smart2 by the following command:
-  https://github.com/ubinux/smart2.git
+    Smart2 now is managed on Github. You can get smart2 from there.
+    https://github.com/ubinux/smart2.git
 
-3. How to manage your packages for your local system
-  As smart, smart2 can be used to manage packages for your local system.This 
-  section will tell you how.
-  
-  3.1 Dependencies
+3. Installation
+
+3.1 Dependencies
+
+    1) The dependencies are same as smart
+
+       Smart2 is based on smart, so please make sure the prerequisites for smart have been installed.
+       Please refrence to http://labix.org/smart/howto to obtain details.
+
+    2) Dependencies for smart2 new features.
+       - python-newt:  the snack module depended by "tgui" graphic interface.
+
+    ---------------------------------------------------------------------------
+    NOTE:
+        In some cases,  (e.g. Cross-Platform),  maybe you can not use the above command
+      which belongs to host directly. You should build a special one for your target-platform,
+      and make sure it's available in your toolchain for Cross-Platform.
+
+      E.g, for Yocto user, you should install the toolchain firstly
+    ---------------------------------------------------------------------------
+
+3.2 Installation
+
+    Cd into smart2 directory and execute the following commands as root:
+    -------------------------------------------------------------------
+    # python setup.py build
+    # python setup.py install
+    -------------------------------------------------------------------
+    Or you can use the supplied Makefile:
+    -------------------------------------------------------------------
+    # make
+    # make install
+    -------------------------------------------------------------------
+
+    -----------------------------------------------------------------------
+    NOTE:
+      After install you have to change the interpreter from "#!/usr/bin/python" to 
+       "#!/usr/bin/env python" in your smart2 command.
     
-    Before install smart2, you have to install the dependencies.
-    - The dependencies same as smart
-	
-      The dependencies of smart are also necessary for smart2.Please refrence 
-	  to doc/ or http://labix.org/smart/howto to get the list of dependencies.
-	
-    - New dependencies of smart2
-	
-      :Graphic Interface:
-      The "tgui" graphic interface depends on snack module comes from python-newt
+      $ whereis smart
+        smart: /opt/bin/smart
+      $ cat /opt/bin/smart
+        #!/usr/bin/env python
+        ......
+    -----------------------------------------------------------------------   
+
+3.3 Global Setting
+
+   1) In Cross-Platform case,  make sure the required commands can be invoked preferentially.
+      For example, you can do it by the following command for Yocto-User
+       # source TOOLCHAIN/environment-setup-i586-poky-linux
+
+   2) Make sure the following environment variable point to correct path.
+       # export RPM_USRLIBRPM=/usr/lib/rpm
+       # export RPM_ETCRPM=/etc/rpm
+       # export RPM_LOCALEDIR=/usr/share/locale
+
+       -----------------------------------------------------------------------
+        NOTE:
+          In Cross-Platform case,  maybe you should customize these variable.
+          E.g., for Yocto user, you should set them as following.
+
+          # export RPM_USRLIBRPM=${OECORE_NATIVE_SYSROOT}/usr/lib/rpm
+          # export RPM_ETCRPM=${SDKTARGETSYSROOT}/etc/rpm
+          # export RPM_LOCALEDIR=${OECORE_NATIVE_SYSROOT}/usr/share/locale
+       -----------------------------------------------------------------------
+
+4. How to manage packages
+
+    4.1 Setting
+
+       A Cross-Platform user, will change to a specified path as the root directory of its target-platform.
+       In this case, you should construct the environment before doing install/remove/search operations, 
+       such as create rpm DB files.
+
+       Smart2 provides a script to do it automaticly, it can help you to complete following jobs.
+       - build pseudo environment
+       - configure DB settings for packages sources(e.g. rpm, deb)
+       - configure smart2 settings for packages sources(e.g. rpm,deb)
+       - add channels
    
-  3.1 build & install smart2 on your local system
-   
-    - Install dependencies of smart2. 
-	
-    - Build and install smart2 as following:
-      Cd into smart2 directory and execute the following commands as root:
-      -------------------------------------------------------------------
-      # python setup.py build
-      # python setup.py install
-      -------------------------------------------------------------------
-      Or you can use the supplied Makefile:
-      -------------------------------------------------------------------
-      # make
-      # make install
-      -------------------------------------------------------------------
-      OK, now you can use smart2 to manage packages for your local system.
-      Smart2 supports all the functions of smart.You can get Users Guide from 
-      doc/ or http://labix.org/smart/howto.
+       You can configure your smart2 environment by the following command: 
+       -------------------------------------------------------------------
+       $ . enviroment-smart.sh rootfs_dir packages_dir
+       -------------------------------------------------------------------
 
-4. How to manage the packages of target by smart2
-  
-  Compare to smart, smart2 is good at managing packages sources of embedded 
-  system.This section will tell you how to do.
+       Obtain details from help message
+       -------------------------------------------------------------------
+        $ ./enviroment-smart.sh --help
 
-  Step 1 - Add smart2 into SDK
-	
-    Add smart2 into your toolchain as the other cross compile tools such gcc, rpm and so on. 
-    The methods are different according to different development systems.
-	
-    For example, smart2 can be added into poky, please reforence to section 5 - "Add smart2 
-    into poky" to get how.
-	
-  Step 2 - Set the cross-development environment on your development machine.
-	
-    Set up your cross-development environment on your development machine.The 
-    methods are different according to different development systems.
+        usage:     $ . enviroment-smart.sh rootfs_dir packages_dir
+        Add channels from the sources in packages_dir,and build the enviroment for target rootfs directory.
 
-    For example, if your embedded system is created by Yocto, the method to establish 
-    necessary environment variables looks like as following:
-      -------------------------------------------------------------------
-      $. /opt/poky/2.1/environment-setup-i586-poky-linux
-      -------------------------------------------------------------------
+        #For example
+        If you have packages of target(e.g. x86 packages created by Yocto):
+             $ ls /home/test/x86_rpm/
+             all  i586  qemux86
+        And you want to manage(e.g. install/remove/search) these packages on your host machain.
+        First, you should use the following command to set up your smart environment
+             $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
+        Then, you can manange target packages for target rootfs:
+             $ smart --rootfs-dir=/home/test/x86-rootfs install pkgname
+             $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
+             $ smart --rootfs-dir=/home/test/x86-rootfs query '*kgnam*'
+        Or cutomize your rootfs:
+             $ smart --rootfs-dir=/home/test/x86-rootfs --interface=tgui
 
-Step 3 -  Source smart2 environment script.
-	
-    Before use smart2, it is necessary to establish an environment for smart2.
+        Note
+        Smart mananges packages by repodate, make sure your repodate is correct with your packages.
+             $ ls /home/test/x86_rpm/all/repodata
+             filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml
+
+       -------------------------------------------------------------------
+
+    4.2 Create rootfs for Target-Platform
+        
+      Compare to smart, smart2 supports a new interface named "tgui" which can 
+      help you to customize your rootfs under character terminal in your 
+      development machine.
 	  
-    The environment script aims to :
-    - build pseudo environment
-    - configure DB settings for packages sources(e.g. rpm,deb)
-    - configure smart2 settings for packages sources(e.g. rpm,deb)
-    - add channels
+      You will enter the tgui insterface with the option "--interface=tgui".
+      For example:
+      -------------------------------------------------------------------
+      $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
+      $ smart --rootfs-dir=/home/test/x86-rootfs  --interface=tgui
+      -------------------------------------------------------------------
 
-    There is an example environment script named enviroment-smart.sh suits rpm 
-    packages that created by Yocto.
+      You can see the interface of tgui:
+      -------------------------------------------------------------------
+      1) Select install type
+         Smart2 supports three kinds of install type. You can get details by pressing "I" or "i" 
+         under the following interface.
+
+         ---------------------------------- Select install type ----------------------------------
+         |                                                                                        |
+         | install all                                                                            |
+         | Busybox base                                                                           |
+         | customize                                                                              |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         | -------------------------------------------------------------------------------------- |
+         | SPACE/ENTER:select  I:Info  X:eXit                                                     |
+         ------------------------------------------------------------------------------------------
+ 
+      2) Smart2 can help you filtering GPLv3.
+	 
+          ---------------- License ------------------
+          |                                          |
+          |  Do you want to install GPLv3 packages ? |
+          |                                          |
+          |                                          |
+          | ---------------------------------------- |
+          | Y:yes  N:no                              |
+          --------------------------------------------
+
+      3) cutomize packages
+        
+         ------------------------------------- Select package -------------------------------------
+         |                                                                                        |
+         | [I] zip                                                                                |
+         | [*] zabbix                                                                             |
+         | [I] xz                                                                                 |
+         | [*] xwud                                                                               |
+         | [*] xwininfo                                                                           |
+         | [*] xwd                                                                                |
+         | [*] xvinfo                                                                             |
+         | [*] xterm                                                                              |
+         | [*] xstdcmap                                                                           |
+         | [*] xsetroot                                                                           |
+         | [*] xsetmode                                                                           |
+         | [*] xset                                                                               |
+         | [*] xserver-xorg-xwayland                                                              |
+         | [*] xserver-xorg-xvfb                                                                  |
+         | [I] xserver-xorg-utils                                                                 |
+         | [I] xserver-xorg-module-libwfb                                                         |
+         | [I] xserver-xorg-module-libint10                                                       |
+         | [*] xserver-xorg-module-exa                                                            |
+         | [*] xserver-xorg-extension-glx                                                         |
+         | [*] xserver-xorg                                                                       |
+         | [I] xserver-xf86-config                                                                |
+         | [*] xrestop                                                                            |
+         | [*] xrefresh                                                                           |
+         | -------------------------------------------------------------------------------------- |
+         | All Package [2609]    Installed Packages [1264] Selected Packages [2609]               |
+         | -------------------------------------------------------------------------------------- |
+         | SPACE/ENTER:select/unselect  R:seaRch N:Next  B:Back  I:Info  X:eXit                   |
+         ------------------------------------------------------------------------------------------
+
+        Note
+        [] Means the package has not been selected and installed. If you want to install it, you can 
+           select it by pressing enter.
+        [*] Means the package has been selcted and will be installed. If you don't want to install it,
+           you can cancel by pressing enter.
+        [I] Means the package has been installed in your rootfs. You can't select/unselect it in tgui.
+           If you want to uninstall it.Please use the following command after exiting tgui.
+           $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
+		   
+      4) cutomize packages type
+         You can select the package type that you want to install into rootfs.
+        
+         ---------------------------- customize special type packages ----------------------------  
+         |                                                                                        ¿
+         | locale [ ]                                                                             ¿
+         | dev [ ]                                                                                ¿
+         | doc [ ]                                                                                ¿
+         | dbg [ ]                                                                                ¿
+         | staticdev [ ]                                                                          ¿
+         | ptest [ ]                                                                              ¿
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         |                                                                                        |
+         | -------------------------------------------------------------------------------------- |
+         | SPACE/ENTER:select/unselect  N:Next  B:Back  I:Info  X:eXit                            |
+         ------------------------------------------------------------------------------------------
+         Note
+         You can get details about the package type by pressing "I" or "i".
 	
-    You can get how to establish a environment from help command:
-      -------------------------------------------------------------------
-      $ enviroment-smart.sh --help
-      -------------------------------------------------------------------
-	  
-    For example,you can install packages for x86 on your host system:
-      -------------------------------------------------------------------
-      $ . enviroment-smart.sh /home/x86/x86-rootfs /home/x86/rpm
-      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart query --name=busybox
-      Loading cache...
-      Updating cache...                                                    
-      ################################################################################################ [100%]
+      5) Confirm selection
 
-      busybox-1.24.1-r0@i586
-      busybox-dbg-1.24.1-r0@i586
-      busybox-dev-1.24.1-r0@i586
-      busybox-hwclock-1.24.1-r0@i586
-      busybox-ptest-1.24.1-r0@i586
-      busybox-syslog-1.24.1-r0@i586
-      busybox-udhcpc-1.24.1-r0@i586
-      busybox-udhcpd-1.24.1-r0@i586
-      $ 
-      -------------------------------------------------------------------
-	  
-    After source the environment script, smart2 can manage the packages that 
-    specified by enviroment-smart.sh.
+        After you confirming your customization:
+        
+        ------------- Confirm install --------------
+        |                                          |
+        |                                          |
+        |  Do you want to begin installation?      |
+        |                                          |
+        |                                          |
+        | ---------------------------------------- |
+        | Y:yes  N:no                              |
+        --------------------------------------------   
 
-Usage1 - commands same as smart
-	  
-    Now, you can use smart commands to manage your target packages with 
-    "--data-dir" options. 
-	  
-    For example:
-    Smart Install/Reinstall
-      -------------------------------------------------------------------
-      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart install pkgname
-      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart install '*kgna*'
-      -------------------------------------------------------------------
-    Smart Query and Information Commands
-     -------------------------------------------------------------------
-      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart search ldap
-      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart query pkgname
-      $ smart --data-dir=/home/x86/x86-rootfs/var/lib/smart query '*kgnam*'
-     -------------------------------------------------------------------	  
-    More commands please reference to doc/ or http://labix.org/smart/howto.
+        The installation will begin:
 
-  Usage2 - Create rootfs for target
+	-------------------------------------------------------------------
+        Updating cache...                    ################################################# [100%]
 
-    Compart to smart, smart2 support a new interface named "tgui" which can 
-    help you to customize your rootfs under character terminal of your 
-    development machine.
-	  
-    You will enter the tgui insterface with the option "--interface=tgui".
-    For example:
-      -------------------------------------------------------------------
-      $ smart --rootfs-dir=/home/x86/x86-rootfs  --interface=tgui
-      -------------------------------------------------------------------
+        Committing transaction...
+        Preparing...                         ################################################# [  0%]
+        1:Installing lmsensors-config-f.. ################################################# [  0%]
+        2:Installing qtbase-mkspecs       ################################################# [  0%]
+        3:Installing glibc-localedata-t.. ################################################# [  0%]
+        4:Installing glibc-charmap-gree.. ################################################# [  0%]
+        5:Installing depmodwrapper-cross  ################################################# [  0%]
+        ......
 		
-    Beside "tgui", you also can manage packages by command line with the option 
-    "--rootfs-dir".
-    For example:
-      -------------------------------------------------------------------
-      $ smart --rootfs-dir=/home/x86/x86-rootfs install pkgname
-      $ smart --rootfs-dir=/home/x86/x86-rootfs remove pkgname
-      $ smart --rootfs-dir=/home/x86/x86-rootfs search pkgname
-      -------------------------------------------------------------------
-	  		
-    Note
-    To make sure the files in rootfs have correct uid and gid, notice that:
-    * When rootfs is finished, please compress it into a tarball in the
-      current terminal.For example:
-      -------------------------------------------------------------------
-      $ cd /home/x86/
-      $ tar jcvf x86-rootfs.tar.bz2 x86-rootfs
-      -------------------------------------------------------------------
-    * And when unpack rootfs on other terminal, please use sudo command with
-      "--numeric-owner" option.For example:
-      ------------------------------------------------------------------
-      $ sudo tar vxf x86-rootfs.tar.bz2 --numeric-owner
-      -------------------------------------------------------------------
+        -------------------------------------------------------------------
 
-5. Add smart2 into poky
+      6) Copy rootfs
 
-   Smart2 can be added into poky.This section will tell you how to do.
+        To make sure the files in rootfs have correct uid and gid, notice that:
+        * When rootfs is finished, please compress it into a tarball in the
+          current terminal to keep the pseudo environment. 
+          For example:
+          -------------------------------------------------------------------
+          $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
+          ...... <------ Finish customizing your rootfs
+          $ cd /home/test/
+          $ tar jcvf x86-rootfs.tar.bz2 x86-rootfs
+          -------------------------------------------------------------------
+        * And when unpack rootfs on other terminal, please use sudo command with
+          "--numeric-owner" option.
+          For example:
+          ------------------------------------------------------------------
+          $ sudo tar vxf x86-rootfs.tar.bz2 --numeric-owner
+          -------------------------------------------------------------------
     
-  5.1 Get poky
-  
-    Clone the poky Git repository or download and unpack a Yocto Project release.
-    Please reference to https://www.yoctoproject.org/.
-	  
-  5.2 Add smart2 into poky instead of smart
-  
-    Use the paches in https://github.com/ubinux/smart2/tree/master/poky-patches	
-    to poky.
+    4.3 Smart2 Commands
+	 
+      Besides "tgui", you also can manage packages by command line with the option 
+      "--rootfs-dir".
+      For example:
       -------------------------------------------------------------------
-      $ ls poky2.1-patches/
-      0001-rpm-The-config-file-of-rpm-will-be-installed-into-SD.patch  
-      0002-python-smartpm-change-smart-to-smart2.patch  
-      0003-smart2-add-dependences-of-smart2.patch
+      $ smart --rootfs-dir=/home/test/x86-rootfs install pkgname
+      $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
+      $ smart --rootfs-dir=/home/test/x86-rootfs query '*kgnam*'
       -------------------------------------------------------------------
-	  
-      Note
-      These patches are for the newest version(2.1) of poky.If you want to use
-      they for another version of poky, please modified files of poky manually 
-      reference to these patches.
-		
-  5.3 Build the toolchain
-  
-    Using poky,build toolchain that includes smart2 as following:
-      -------------------------------------------------------------------
-      # bitbake meta-toolchain
-      -------------------------------------------------------------------
-    After building,a *.sh installation script will be generated.
-	
-    Note 
-    Please make sure your toolchain matches your target architecture.
+      More commands please reference to doc/ or http://labix.org/smart/howto.
+  		
+

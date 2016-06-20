@@ -7,7 +7,7 @@ PKGS_DIR=$2
 #Check the parameters
 if [ -z "$2" -o $1 = "--help" -o $1 = "-h" -o $1 = "-H" ]; then
     echo ""
-    echo "usage:     . enviroment-smart.sh rootfs_dir packages_dir "
+    echo "usage:     \$ . enviroment-smart.sh rootfs_dir packages_dir "
     echo "Add channels from the sources in packages_dir,and build the enviroment for target rootfs directory."
     echo ""
     echo "#For example"
