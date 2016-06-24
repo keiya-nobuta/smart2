@@ -3,9 +3,13 @@ Limit
   * DEB
   * Slack
   * Arch
-- smart2 only has been tested with Yocto. 
+- smart2 has been tested only with Yocto 2.0.
+- the progress bar of the log of install packages are not 100%.
 
 Plan
 - support python3
 - manage srpm packages
 - manage remote packages
+- try to add enviroment-smart.sh into smart2
+- sort packages from a~z
+- 

@@ -30,7 +30,7 @@
         - python-newt:  the snack module depended by "tgui" graphic interface.
 
       Note
-        In some cases,  (e.g. Cross-Platform),  maybe you can not use the above command
+        In some cases (e.g. Cross-Platform), maybe you can not use the above command
         which belongs to host directly. You should build a special one for your target-platform,
         and make sure it's available in your toolchain for Cross-Platform.
 
@@ -61,7 +61,7 @@
 
     3.3 Global Setting
 
-      1) In Cross-Platform case,  make sure the required commands can be invoked preferentially.
+      1) In Cross-Platform case, make sure the required commands can be invoked preferentially.
         For example, you can do it by the following command for Yocto-User
         -----------------------------------------------------------------------
         # source TOOLCHAIN/environment-setup-i586-poky-linux
@@ -76,8 +76,8 @@
         -----------------------------------------------------------------------
 
         Note
-          In Cross-Platform case,  maybe you should customize these variable.
-          E.g., for Yocto user, you should set them as following.
+          In Cross-Platform case, maybe you should customize these variable.
+          E.g. for Yocto user, you should set them as following.
           -------------------------------------------------------------------
           # export RPM_USRLIBRPM=${OECORE_NATIVE_SYSROOT}/usr/lib/rpm
           # export RPM_ETCRPM=${SDKTARGETSYSROOT}/etc/rpm
@@ -86,51 +86,54 @@
 
 4. How to manage packages
 
-    4.1 Setting
+    4.1 Prepare
 
-      A Cross-Platform user, will change to a specified path as the root directory of its 
-      target-platform.
-      In this case, you should construct the environment before doing install/remove/search operations, 
-      such as create rpm DB files.
+      You should construct the environment before doing install/remove/search operations. 
 
-      Smart2 provides a script to do it automaticly, it can help you to complete following jobs.
-        - build pseudo environment
-        - configure DB settings for packages sources(e.g. rpm, deb)
-        - configure smart2 settings for packages sources(e.g. rpm,deb)
-        - add channels
+      Smart2 provides a script named enviroment-smart.sh to do it automaticly.
+      It can help you to complete the following jobs:
+        - Build pseudo environment.
+        - Configure DB settings for packages sources (e.g. rpm, deb).
+        - Configure smart2 settings for packages sources (e.g. rpm, deb).
+        - Add channels for each packages source.
    
-      You can configure your smart2 environment by the following command: 
+      You can configure your smart2 environment as the following: 
       -------------------------------------------------------------------
-      $ . enviroment-smart.sh rootfs_dir packages_dir
+      $ . enviroment-smart.sh ROOTFS_DIR PACKAGES_DIR
       -------------------------------------------------------------------
+      There must be two parameters for enviroment-smart.sh:
 
-      Obtain details from help message
-      -------------------------------------------------------------------
-      $ ./enviroment-smart.sh --help
+      1) ROOTFS_DIR: The rootfs directory where you want to install packages.
 
-      usage:     $ . enviroment-smart.sh rootfs_dir packages_dir
-      Add channels from the sources in packages_dir,and build the enviroment for target rootfs directory.
+         Note
+           * ROOTFS_DIR must be absolute path.
+           * If it doesn't exist, it will be created.
 
-      #For example
-      If you have packages of target(e.g. x86 packages created by Yocto):
-           $ ls /home/test/x86_rpm/
-           all  i586  qemux86
-      And you want to manage(e.g. install/remove/search) these packages on your host machain.
-      First, you should use the following command to set up your smart environment
-           $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
-      Then, you can manange target packages for target rootfs:
-           $ smart --rootfs-dir=/home/test/x86-rootfs install pkgname
-           $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
-           $ smart --rootfs-dir=/home/test/x86-rootfs query '*kgnam*'
-      Or cutomize your rootfs:
-           $ smart --rootfs-dir=/home/test/x86-rootfs --interface=tgui
+      2) PACKAGES_DIR: The packages sources directory. There can be multiple packages sources
+                       in this directory.
 
-      Note
-        Smart mananges packages by repodate, make sure your repodate is correct with your packages.
-           $ ls /home/test/x86_rpm/all/repodata
-           filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml
+         Note
+           Smart2 manage packages by repodata, make sure there is repodata in every sources
+           directory under PACKAGES_DIR.
+           
+      For example:
+        If you build x86 by Yocto, there will be three packages sources for x86.
+        And there is a repodata in each packages sources:
+        -------------------------------------------------------------------
+        $ ls /home/test/x86_rpm/
+        all  i586  qemux86
+        $ ls /home/test/x86_rpm/all/repodata
+        filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml
+        $ ls /home/test/x86_rpm/i586/repodata
+        filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml
+        $ ls /home/test/x86_rpm/qemux86/repodata
+        filelists.xml.gz  other.xml.gz  primary.xml.gz  repomd.xml
+        -------------------------------------------------------------------
+        You can configure your smart2 environment for x86 by the following:
+        -------------------------------------------------------------------
+        $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
+        -------------------------------------------------------------------
 
-      -------------------------------------------------------------------
 
     4.2 Create rootfs for Target-Platform
         
@@ -140,54 +143,31 @@
       You will enter the tgui insterface with the option "--interface=tgui".
       For example:
       -------------------------------------------------------------------
-      $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
-      $ smart --rootfs-dir=/home/test/x86-rootfs  --interface=tgui
+      $ smart --rootfs-dir=$ROOTFS_DIR  --interface=tgui
       -------------------------------------------------------------------
+      Note
+        --rootfs-dir: rootfs directory that specified by enviroment-smart.sh.
 
-      You can see the interface of tgui:
+      After execute the above command, you can enter the interface of tgui:
       
       1) Select install type
-        Smart2 supports three kinds of install type. You can get details by pressing "I" or "i" 
-        under the following interface.
+        Smart2 supports three kinds of install type:
+        - install all
+          By default, all pacakges will be selected.
+        - Busybox base
+          By default, only busybox packages will be selected.
+        - customize
+          By default, no packages will be selected.
 
-        ---------------------------------- Select install type ----------------------------------
-        |                                                                                        |
-        | install all                                                                            |
-        | Busybox base                                                                           |
-        | customize                                                                              |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        |                                                                                        |
-        | -------------------------------------------------------------------------------------- |
-        | SPACE/ENTER:select  I:Info  X:eXit                                                     |
-        ------------------------------------------------------------------------------------------
  
       2) Smart2 can help you filtering GPLv3.
 	 
-        ---------------- License ------------------
-        |                                          |
-        |  Do you want to install GPLv3 packages ? |
-        |                                          |
-        |                                          |
-        | ---------------------------------------- |
-        | Y:yes  N:no                              |
-        --------------------------------------------
-
-      3) cutomize packages
+        If you select "install all" or "customize" in above, smart2 will ask you whether 
+        you want to install packages which license is GPLv3.
+        - No  : GPLv3 packages will not be selected and not show in the next step.
+        - Yes : GPLv3 packages will be as same as the other packages.
+        
+      3) customize packages
         
         ------------------------------------- Select package -------------------------------------
         |                                                                                        |
@@ -221,15 +201,17 @@
         ------------------------------------------------------------------------------------------
 
         Note
-          [] Means the package has not been selected and installed. If you want to install it, you can 
-            select it by pressing enter.
-          [*] Means the package has been selcted and will be installed. If you don't want to install it,
-             you can cancel by pressing enter.
-          [I] Means the package has been installed in your rootfs. You can't select/unselect it in tgui.
-             If you want to uninstall it.Please use the following command after exiting tgui.
-             $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
+          - [] Means the package has not been selected and installed. If you want to install it, you can 
+               select it by pressing enter.
+          - [*] Means the package has been selcted and will be installed. If you don't want to install it,
+               you can cancel by pressing enter.
+          - [I] Means the package has been installed in your rootfs. You can't select/unselect it in tgui.
+               If you want to uninstall it.Please use the following command after exiting tgui.
+               $ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname
+
+          - Next: If you press "N" or "n" in the interface, it will go to the next step.
 		   
-      4) cutomize packages type
+      4) customize packages type
         You can select the package type that you want to install into rootfs.
         
         ---------------------------- customize special type packages ----------------------------  
@@ -264,34 +246,9 @@
 	
       5) Confirm selection
 
-        After you confirming your customization:
-        
-        ------------- Confirm install --------------
-        |                                          |
-        |                                          |
-        |  Do you want to begin installation?      |
-        |                                          |
-        |                                          |
-        | ---------------------------------------- |
-        | Y:yes  N:no                              |
-        --------------------------------------------   
+        After you confirming your customization, the installation will begin.
 
-        The installation will begin:
-
-        -------------------------------------------------------------------
-        Updating cache...                    ################################################# [100%]
-        Committing transaction...
-        Preparing...                         ################################################# [  0%]
-        1:Installing lmsensors-config-f.. ################################################# [  0%]
-        2:Installing qtbase-mkspecs       ################################################# [  0%]
-        3:Installing glibc-localedata-t.. ################################################# [  0%]
-        4:Installing glibc-charmap-gree.. ################################################# [  0%]
-        5:Installing depmodwrapper-cross  ################################################# [  0%]
-        ......
-		
-        -------------------------------------------------------------------
-
-      6) Copy rootfs
+      6) Confirm installation
 
         To make sure the files in rootfs have correct uid and gid, notice that:
           * When rootfs is finished, please compress it into a tarball in the
