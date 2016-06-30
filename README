@@ -264,19 +264,15 @@
 
          To make sure the files in rootfs have correct uid and gid, notice that:
           * When rootfs is finished, please compress it into a tarball in the
-            current terminal to keep the pseudo environment. 
-          * And when unpack rootfs on other terminal, please use sudo command with
-            "--numeric-owner" option.
+            current terminal to keep the pseudo environment.
+          * When unpack rootfs, please use sudo command with "--numeric-owner" option.
 
             For example:
             -------------------------------------------------------------------
              $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
-             $ smart --rootfs-dir=$ROOTFS_DIR  --interface=tgui
+             $ smart --rootfs-dir=/home/test/x86_rootfs  --interface=tgui
              $ cd /home/test/
-             $ tar jcvf x86-rootfs.tar.bz2 x86-rootfs
-             $ sudo tar vxf x86-rootfs.tar.bz2 -C /deploy_dir/ --numeric-owner
-             $ ls /deploy_dir
-               x86-rootfs
+             $ tar cvf - x86-rootfs | (cd $DEST_DIR ;sudo tar xvf - --numeric-owner)
             -------------------------------------------------------------------
   
     4.3 Smart2 Commands
