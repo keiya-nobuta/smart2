@@ -188,6 +188,7 @@ class TguiInteractiveInterface(TguiInterface):
             packages = ctrl.getCache().getPackages()
             if len(packages) > 1:
                 sortUpgrades(packages)
+		packages.sort()
             display_pkgs = copy.copy(packages)
         else:
             display_pkgs = copy.copy(packages)
