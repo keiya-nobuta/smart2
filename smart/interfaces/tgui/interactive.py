@@ -10,9 +10,9 @@ import sys, os, copy, textwrap, snack, string, time, re
 from snack import *
 
 _TXT_ROOT_TITLE = "Package Installer"
-Install_types = [("install all", "If you choose it, all packages are selected."), \
+Install_types = [("Install All", "If you choose it, all packages are selected."), \
                 ("Busybox base", "Busybox base sample."), \
-                ("customize", "Default, no packages are selected ,your can choose packages that you want.")]
+                ("Customize", "Default, no packages are selected, your can choose packages that you want.")]
 
 INSTALL_ALL = 0
 INSTALL_BUSYBOX = 1

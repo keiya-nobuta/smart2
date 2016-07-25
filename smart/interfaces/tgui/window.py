@@ -5,9 +5,9 @@
 import sys, os, copy, textwrap, snack, string, time, re
 from snack import * 
 
-Confirm_type_list = [("Exit","\n Do you really terminate it ?\n\n"), \
+Confirm_type_list = [("Exit","\n Do you really terminate it?\n\n"), \
                      ("Confirm install","\n Do you want to begin installation?\n\n"), \
-                     ("License","\n Do you want to install GPLv3 packages ?\n\n"), \
+                     ("License","\n Do you want to install GPLv3 packages?\n\n"), \
                     ]
 
 class pkgType:
@@ -124,7 +124,7 @@ def StartHotkeyScreen(sText):
     if width < 80 or height < 24:
         StopHotkeyScreen(screen)
         screen = None
-        print "Your screen is too small! It must be at least 24 lines by 80 columns"
+        print "Your screen is too small! It must be at least 24 lines by 80 columns!"
 
     return screen
 
@@ -574,7 +574,7 @@ def PKGINSTPackageSearchWindow(insScreen):
             else:
                 buttons = ['OK']
                 (w, h) = GetButtonMainSize(insScreen)
-                rr = ButtonInfoWindow(insScreen, "Error !", "Search Value Invalid!", \
+                rr = ButtonInfoWindow(insScreen, "Error!", "Search Value Invalid!", \
                                   w, h, buttons)
         else:
             break
@@ -647,7 +647,7 @@ def PKGTypeSelectWindow(insScreen, pkgTypeList, position = 0):
     t2 = snack.Textbox(main_width, hotkey_line, hotkey_text)
 
     # Create Grid instance
-    title = "customize special type packages"
+    title = "Customize special type packages"
 
     g = snack.GridForm(insScreen, title, 1, 5)
    
@@ -795,7 +795,7 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
 
     # Create Text instance
     t1 = snack.Textbox(main_width, 1, "-" * main_width)
-    text = "All Package [%ld]    Installed Packages [%ld] Selected Packages [%ld]" % \
+    text = "All Packages [%ld]    Installed Packages    [%ld] Selected Packages [%ld]" % \
           (num_package, installed_pkgs, len(selected_packages))
     t2 = snack.Textbox(main_width, 1, text)
     t3 = snack.Textbox(main_width, 1, "-" * main_width)
@@ -918,7 +918,7 @@ def PKGINSTDebuginfoWindow(insScreen, lstDebugPkg, selected_packages, iPosition,
 
     # Create Text instance
     t1 = snack.Textbox(main_width, 1, "-" * main_width)
-    text = "All Package [%ld]    Installed Packages [%ld] Selected Packages [%ld]" % \
+    text = "All Packages [%ld]    Installed Packages    [%ld] Selected Packages [%ld]" % \
           (num_package, installed_pkgs, len(selected_packages))
 
     t2 = snack.Textbox(main_width, 1, text)
@@ -926,7 +926,7 @@ def PKGINSTDebuginfoWindow(insScreen, lstDebugPkg, selected_packages, iPosition,
     t4 = snack.Textbox(main_width, hotkey_line, hotkey_text)
 
     # Create Grid instance
-    g = snack.GridForm(insScreen, "Select debuginfo package", 1, 5)
+    g = snack.GridForm(insScreen, "Select debuginfo packages", 1, 5)
     g.add(li, 0, 0)
     g.add(t1, 0, 1, (-1, 0, -1, 0))
     g.add(t2, 0, 2)
@@ -981,7 +981,7 @@ def ConfirmGplv3Window(insScreen, packages):
     else:
         scroll = 0
 
-    hotkey_base_text = "These GPLv3 packages are depended,do you want to install them? (y/n)"
+    hotkey_base_text = "These GPLv3 packages are depended, do you want to install them? (y/n)"
     wrapper = textwrap.TextWrapper(width = main_width)
     hotkey_text = wrapper.fill(hotkey_base_text)
     if hotkey_text != hotkey_base_text:
