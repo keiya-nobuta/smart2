@@ -363,6 +363,7 @@ class TguiInteractiveInterface(TguiInterface):
                 else:
                     return ("b", selected_pkgs, pkgs_spec)
             elif stage == STAGE_INFO:
+                ctrl = self._ctrl
                 if not search == None:
                     PKGINSTPackageInfoWindow(screen, ctrl, searched_ret[position])
                 else:
