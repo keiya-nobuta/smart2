@@ -91,12 +91,12 @@ class TguiInteractiveInterface(TguiInterface):
                 selected_pkgs = []
                 selected_pkgs_spec = []
                 pkgs_spec = []
-                if install_type != INSTALL_BUSYBOX:
-                    result = HotkeyExitWindow(screen, confirm_type=CONFIRM_LICENSE)
-                    if result == "y":
-                        no_gpl3 = False
-                    else:
-                        no_gpl3 = True
+            #if install_type != INSTALL_BUSYBOX:
+                result = HotkeyExitWindow(screen, confirm_type=CONFIRM_LICENSE)
+                if result == "y":
+                    no_gpl3 = False
+                else:
+                    no_gpl3 = True
             #==============================
             # select package
             #==============================
@@ -188,7 +188,7 @@ class TguiInteractiveInterface(TguiInterface):
             packages = ctrl.getCache().getPackages()
             if len(packages) > 1:
                 sortUpgrades(packages)
-		packages.sort()
+                packages.sort()
             display_pkgs = copy.copy(packages)
         else:
             display_pkgs = copy.copy(packages)
