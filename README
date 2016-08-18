@@ -1,17 +1,17 @@
 1. Overview
 
-    Smart2 is a package manager that based on smart. Smart2 support all the 
+    Smart2 is a package manager that based on smart. Smart2 supports all the 
     funtions of smart. In addition, smart2 has some new features.
   
     --------------
     New Features
     --------------
 
-    - A new interface named "tgui" can show you a gui on your character terminal.
-    - Supports customizing your target rootfs on host development machine.
+    - A new interface named "tgui" can show you a GUI on your character terminal.
+    - Support for custom target rootfs on host development machine.
    
     Note
-      More informations about smart, please reference to doc/ or http://labix.org/smart/howto.
+      More information about smart, refer to doc/ or http://labix.org/smart/howto.
    
 2. How to get smart2
   
@@ -24,7 +24,7 @@
 
       1) The dependencies are same as smart
          Smart2 is based on smart, so please make sure the prerequisites for smart have been installed.
-         Please refrence to http://labix.org/smart/howto to obtain details.
+         Refre to http://labix.org/smart/howto to obtain details.
 
       2) Dependencies for smart2 new features.
          - python-newt:  the snack module depended by "tgui" graphic interface.
@@ -50,7 +50,7 @@
       -------------------------------------------------------------------
 
       Note
-        After install you have to change the interpreter from "#!/usr/bin/python" to 
+        After installation, you have to change the interpreter from "#!/usr/bin/python" to 
         "#!/usr/bin/env python" in your smart2 command.
         -----------------------------------------------------------------
          $ whereis smart
@@ -60,7 +60,7 @@
            ......
         -----------------------------------------------------------------
 
-    3.3 Global Setting
+    3.3 Global Settings
 
       1) In Cross-Platform case, make sure the required commands can be invoked preferentially.
          For example, you can do it by the following command for Yocto-User
