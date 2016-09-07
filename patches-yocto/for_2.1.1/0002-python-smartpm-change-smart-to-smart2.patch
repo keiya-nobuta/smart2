@@ -1,0 +1,130 @@
+From 8329febc556988ab3eed32570501b1810872882b Mon Sep 17 00:00:00 2001
+From: Teppei Asaba <teppeiasaba@jp.fujitsu.com>
+Date: Wed, 7 Sep 2016 20:27:34 +0900
+Subject: [PATCH] change SRC_URI (switch to smart2)  - support text based GUI 
+ - support auto-resolve dependency
+
+Signed-off-by: Teppei Asaba <teppeiasaba@jp.fujitsu.com>
+---
+ meta/recipes-devtools/python/python-smartpm_git.bb |   84 +++++++++++++++-----
+ 1 file changed, 62 insertions(+), 22 deletions(-)
+
+diff --git a/meta/recipes-devtools/python/python-smartpm_git.bb b/meta/recipes-devtools/python/python-smartpm_git.bb
+index f030b3e..b112931 100644
+--- a/meta/recipes-devtools/python/python-smartpm_git.bb
++++ b/meta/recipes-devtools/python/python-smartpm_git.bb
+@@ -11,28 +11,20 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=393a5ca445f6965873eca0259a17f833"
+ DEPENDS = "python rpm gettext-native python-rpm"
+ SRCNAME = "smart"
+ 
+-SRC_URI = "\
+-          git://github.com/smartpm/smart.git \
+-          file://smartpm-rpm5-nodig.patch \
+-          file://smart-recommends.patch \
+-          file://smart-improve-error-reporting.patch \
+-          file://smart-channelsdir.patch \
+-          file://smart-attempt.patch \
+-          file://smart-attempt-fix.patch \
+-          file://smart-add-for-rpm-ignoresize-check.patch \
+-          file://smart-already-installed-message.patch \
+-          file://smart-set-noprogress-for-pycurl.patch \
+-          file://smart-cache.py-getPackages-matches-name-version.patch \
+-          file://smart-channel-remove-all.patch \
++SRC_URI = " \
++          git://github.com/ubinux/smart2.git \
++          file://enviroment-smart.sh \
+          "
+ 
+-SRCREV = "407a7eca766431257dcd1da15175cc36a1bb22d0"
++SRCREV = "858b31c78c50772e32f3982f2d5b404359e8405f"
+ PV = "1.5+git${SRCPV}"
+ 
+ S = "${WORKDIR}/git"
+ 
+ # Options - rpm, qt4, gtk
+-PACKAGECONFIG ??= "rpm"
++PACKAGECONFIG_class-target ??= "rpm"
++PACKAGECONFIG_class-native ??= "rpm"
++PACKAGECONFIG_class-nativesdk ??= "rpm"
+ 
+ RPM_RDEP = "${PN}-backend-rpm"
+ QT_RDEP = "${PN}-interface-qt4"
+@@ -92,20 +84,68 @@ do_install_append() {
+    fi
+ }
+ 
+-add_native_wrapper() {
+-        create_wrapper ${D}/${bindir}/smart \
+-		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
+-		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
++create_wrapper_sdk () {
++        # Create a wrapper script where extra environment variables are needed
++        #
++        # These are useful to work around relocation issues, by setting environment
++        # variables which point to paths in the filesystem.
++        #
++        # Usage: create_wrapper FILENAME [[VAR=VALUE]..]
++
++        cmd=$1
++        shift
++
++        echo "Generating wrapper script for $cmd"
++
++        mv $cmd $cmd.real
++        cmdname=`basename $cmd`
++        cat <<END >$cmd
++#!/bin/bash
++realpath=\`readlink -fn \$0\`
++export $@
++log=0
++for arg in "\$@"
++do
++        if [ \$arg = "--interface=tgui" ];then
++                log=1
++                break
++        fi
++done
++if [ \$log == 1 ];then
++        exec -a \`dirname \$realpath\`/smart \`dirname \$realpath\`/smart.real "\$@" 2>smart.error | tee smart.log
++        echo "The install information was logged in smart.error and smart.log."
++else
++        exec -a \`dirname \$realpath\`/smart \`dirname \$realpath\`/smart.real "\$@"
++fi
++END
++        chmod +x $cmd
++}
++
++add_native_or_sdk_wrapper() {
++        if [ "$1" = "sdk" ]; then
++                RPM_ETCRPM='$'{RPM_ETCRPM-'$'SDKTARGETSYSROOT/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('base_prefix', True))}/rpm}
++                create_wrapper_sdk ${D}/${bindir}/smart \
++                        RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
++                        RPM_ETCRPM=${RPM_ETCRPM} \
++                        RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
++        else
++                RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm}
++                create_wrapper ${D}/${bindir}/smart \
++                        RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
++                        RPM_ETCRPM=${RPM_ETCRPM} \
++                        RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
++        fi
+ }
+ 
+ do_install_append_class-native() {
+         sed -i -e 's|^#!.*/usr/bin/env python|#! /usr/bin/env nativepython|' ${D}${bindir}/smart
+-        add_native_wrapper
++        add_native_or_sdk_wrapper "native"
+ }
+ 
+ do_install_append_class-nativesdk() {
+-        add_native_wrapper
++        add_native_or_sdk_wrapper "sdk"
++        install -d ${D}${bindir}/
++        install -m 0755 ${WORKDIR}/enviroment-smart.sh ${D}${bindir}/
+ }
+ 
+ PACKAGES = "${PN}-dev ${PN}-dbg ${PN}-doc smartpm \
+-- 
+1.7.9.5
+

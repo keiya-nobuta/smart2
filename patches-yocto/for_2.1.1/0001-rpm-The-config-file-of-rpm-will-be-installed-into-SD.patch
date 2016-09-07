@@ -1,0 +1,136 @@
+From c6808f147b6b60967d0780e6ba09d8b9bdda5ccc Mon Sep 17 00:00:00 2001
+From: Lei Maohui <leimaohui@cn.fujitsu.com>
+Date: Tue, 31 May 2016 14:21:11 +0900
+Subject: [PATCH 1/3] rpm:The config file of rpm will be installed into
+ SDKTARGETSYSROOT for each architecture, so RPM_ETCRPM should be set to
+ SDKTARGETSYSROOT/etc/rpm.
+
+Signed-off-by: Lei Maohui <leimaohui@cn.fujitsu.com>
+---
+ meta/recipes-devtools/rpm/rpm_5.4+cvs.bb | 22 ++++++++++++++--------
+ meta/recipes-devtools/rpm/rpm_5.4.16.bb  | 22 ++++++++++++++--------
+ 2 files changed, 28 insertions(+), 16 deletions(-)
+
+diff --git a/meta/recipes-devtools/rpm/rpm_5.4+cvs.bb b/meta/recipes-devtools/rpm/rpm_5.4+cvs.bb
+index 0991f6d..30bdcc9 100644
+--- a/meta/recipes-devtools/rpm/rpm_5.4+cvs.bb
++++ b/meta/recipes-devtools/rpm/rpm_5.4+cvs.bb
+@@ -690,41 +690,47 @@ def gen_arch_macro(d):
+     return d.expand(val)
+ 
+ 
+-add_native_wrapper() {
++add_native_or_sdk_wrapper() {
++        if [ $1 = "sdk" ]; then
++                RPM_ETCRPM='$'{RPM_ETCRPM-'$'SDKTARGETSYSROOT/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('base_prefix', True))}/rpm}
++        else
++                RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm}
++        fi
++
+         create_wrapper ${D}/${bindir}/rpm \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+         create_wrapper ${D}/${bindir}/rpm2cpio \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+         create_wrapper ${D}/${bindir}/rpmbuild \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+         create_wrapper ${D}/${bindir}/rpmconstant \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+ 	for rpm_binary in ${D}/${libdir}/rpm/bin/rpm* ${D}/${libdir}/rpm/bin/debugedit; do
+         	create_wrapper $rpm_binary \
+ 			RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-			RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++			RPM_ETCRPM=${RPM_ETCRPM} \
+ 			RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 	done
+ }
+ 
+ do_install_append_class-native() {
+-	add_native_wrapper
++	add_native_or_sdk_wrapper "native"
+ }
+ 
+ do_install_append_class-nativesdk() {
+-	add_native_wrapper
++	add_native_or_sdk_wrapper "sdk"
+ }
+ 
+ BBCLASSEXTEND = "native nativesdk"
+diff --git a/meta/recipes-devtools/rpm/rpm_5.4.16.bb b/meta/recipes-devtools/rpm/rpm_5.4.16.bb
+index cbdca88..b4cc8c5 100644
+--- a/meta/recipes-devtools/rpm/rpm_5.4.16.bb
++++ b/meta/recipes-devtools/rpm/rpm_5.4.16.bb
+@@ -699,41 +699,47 @@ def gen_arch_macro(d):
+     return d.expand(val)
+ 
+ 
+-add_native_wrapper() {
++add_native_or_sdk_wrapper() {
++        if [ "$1" = "sdk" ]; then
++                RPM_ETCRPM='$'{RPM_ETCRPM-'$'SDKTARGETSYSROOT/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('base_prefix', True))}/rpm}
++        else
++                RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm}
++        fi
++
+         create_wrapper ${D}/${bindir}/rpm \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+         create_wrapper ${D}/${bindir}/rpm2cpio \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+         create_wrapper ${D}/${bindir}/rpmbuild \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+         create_wrapper ${D}/${bindir}/rpmconstant \
+ 		RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-		RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++		RPM_ETCRPM=${RPM_ETCRPM} \
+ 		RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 
+ 	for rpm_binary in ${D}/${libdir}/rpm/bin/rpm* ${D}/${libdir}/rpm/bin/debugedit; do
+         	create_wrapper $rpm_binary \
+ 			RPM_USRLIBRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('libdir', True), d.getVar('bindir', True))}/rpm \
+-			RPM_ETCRPM='$'{RPM_ETCRPM-'`dirname $''realpath`'/${@os.path.relpath(d.getVar('sysconfdir', True), d.getVar('bindir', True))}/rpm} \
++			RPM_ETCRPM=${RPM_ETCRPM} \
+ 			RPM_LOCALEDIRRPM='`dirname $''realpath`'/${@os.path.relpath(d.getVar('datadir', True), d.getVar('bindir', True))}/locale
+ 	done
+ }
+ 
+ do_install_append_class-native() {
+-	add_native_wrapper
++	add_native_or_sdk_wrapper "native"
+ }
+ 
+ do_install_append_class-nativesdk() {
+-	add_native_wrapper
++	add_native_or_sdk_wrapper "sdk"
+ }
+ 
+ BBCLASSEXTEND = "native nativesdk"
+-- 
+1.8.4.2
+
