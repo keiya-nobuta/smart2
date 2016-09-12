@@ -1,19 +1,22 @@
-From 8329febc556988ab3eed32570501b1810872882b Mon Sep 17 00:00:00 2001
-From: Teppei Asaba <teppeiasaba@jp.fujitsu.com>
-Date: Wed, 7 Sep 2016 20:27:34 +0900
-Subject: [PATCH] change SRC_URI (switch to smart2)  - support text based GUI 
+From b244f993521bd109e2b8e067b3b0226c31e85af9 Mon Sep 17 00:00:00 2001
+From: Lei Maohui <leimaohui@cn.fujitsu.com>
+Date: Mon, 12 Sep 2016 18:11:31 +0900
+Subject: [PATCH 2/3] change SRC_URI (switch to smart2)
+
+ - support text based GUI
  - support auto-resolve dependency
 
 Signed-off-by: Teppei Asaba <teppeiasaba@jp.fujitsu.com>
+Signed-off-by: Lei Maohui <leimaohui@cn.fujitsu.com>
 ---
- meta/recipes-devtools/python/python-smartpm_git.bb |   84 +++++++++++++++-----
- 1 file changed, 62 insertions(+), 22 deletions(-)
+ meta/recipes-devtools/python/python-smartpm_git.bb | 85 ++++++++++++++++------
+ 1 file changed, 62 insertions(+), 23 deletions(-)
 
 diff --git a/meta/recipes-devtools/python/python-smartpm_git.bb b/meta/recipes-devtools/python/python-smartpm_git.bb
-index f030b3e..b112931 100644
+index f030b3e..dbac25d 100644
 --- a/meta/recipes-devtools/python/python-smartpm_git.bb
 +++ b/meta/recipes-devtools/python/python-smartpm_git.bb
-@@ -11,28 +11,20 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=393a5ca445f6965873eca0259a17f833"
+@@ -11,28 +11,19 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=393a5ca445f6965873eca0259a17f833"
  DEPENDS = "python rpm gettext-native python-rpm"
  SRCNAME = "smart"
  
@@ -32,12 +35,12 @@ index f030b3e..b112931 100644
 -          file://smart-channel-remove-all.patch \
 +SRC_URI = " \
 +          git://github.com/ubinux/smart2.git \
-+          file://enviroment-smart.sh \
           "
  
 -SRCREV = "407a7eca766431257dcd1da15175cc36a1bb22d0"
-+SRCREV = "858b31c78c50772e32f3982f2d5b404359e8405f"
- PV = "1.5+git${SRCPV}"
+-PV = "1.5+git${SRCPV}"
++SRCREV = "549e50fdc2325dfd8b3074d2e26e041ec61a4abd"
++PV = "2.0+git${SRCPV}"
  
  S = "${WORKDIR}/git"
  
@@ -49,7 +52,7 @@ index f030b3e..b112931 100644
  
  RPM_RDEP = "${PN}-backend-rpm"
  QT_RDEP = "${PN}-interface-qt4"
-@@ -92,20 +84,68 @@ do_install_append() {
+@@ -92,20 +83,68 @@ do_install_append() {
     fi
  }
  
@@ -121,10 +124,10 @@ index f030b3e..b112931 100644
 -        add_native_wrapper
 +        add_native_or_sdk_wrapper "sdk"
 +        install -d ${D}${bindir}/
-+        install -m 0755 ${WORKDIR}/enviroment-smart.sh ${D}${bindir}/
++        install -m 0755 ${S}/enviroment-smart.sh ${D}${bindir}/
  }
  
  PACKAGES = "${PN}-dev ${PN}-dbg ${PN}-doc smartpm \
 -- 
-1.7.9.5
+1.8.4.2
 
