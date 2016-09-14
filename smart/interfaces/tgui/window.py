@@ -85,6 +85,46 @@ def _StatusToggle(insLi, sHkey, iIdx, selected_packages, packages):
     item = "[%s] %s" % (newsign, pkg.name)
     insLi.replace(item, iIdx)
     return insLi
+#------------------------------------------------------------
+# def _SelectAll(insLi, sHkey,numPackage,selected_packages, packages)
+#
+#   package select window
+#
+# Input:
+#    insLi             : instance of Listbox
+#    sHkey             : hotkey selected
+#    numPackage        : number of showed packages
+#    selected_packages : selected_package
+#    packages          : showed packages
+# Output:
+#    insLi :changed instance of Listbox
+#------------------------------------------------------------
+def _SelectAll(insLi, sHkey, numPackage, selected_packages, packages):
+
+    haveSelected=False
+    for pkg in packages:
+        if (not pkg in selected_packages) and (not pkg.installed):
+            haveSelected=True
+            break
+        # replace sign in list
+    if haveSelected :
+        for iIdx in range(0,numPackage):
+            pkg=packages[iIdx]
+            if (not pkg in selected_packages) and (not pkg.installed):
+                selected_packages.append(pkg)
+                item = "[%s] %s" % ("*", pkg.name)
+                insLi.replace(item,iIdx)
+    else:
+        for iIdx in range(0,numPackage):
+            pkg=packages[iIdx]
+            if (pkg in selected_packages) and (not pkg.installed):
+                selected_packages.remove(pkg)
+                item = "[%s] %s" % (" ", pkg.name)
+                insLi.replace(item,iIdx)
+
+    return insLi
+
+#_SelectAll
 
 
 #------------------------------------------------------------
@@ -756,7 +796,7 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
     else:
         scroll = 0
 
-    hotkey_base_text = "SPACE/ENTER:select/unselect  R:seaRch N:Next  B:Back  I:Info  X:eXit"
+    hotkey_base_text = "SPACE/ENTER:select/unselect  A:select All  R:seaRch N:Next  B:Back  I:Info  X:eXit"
     wrapper = textwrap.TextWrapper(width = main_width)
     hotkey_text = wrapper.fill(hotkey_base_text)
     if hotkey_text != hotkey_base_text:
@@ -826,7 +866,10 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
                  "i"     : "i", \
                  "I"     : "i", \
                  "x"     : "x", \
-                 "X"     : "x"}
+                 "X"     : "x", \
+                 "a"     : "a", \
+                 "A"     : "a"}        
+
     for x in myhotkeys.keys():
         g.addHotKey(x)
 #####################################
@@ -840,6 +883,9 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
                 idx += 1
                 if idx >= num_package:
                     idx = num_package - 1
+                li.setCurrent(idx)
+            elif myhotkeys[result]=="a":        ###
+                li = _SelectAll(li, myhotkeys[result],num_package, selected_packages, packages)
                 li.setCurrent(idx)
             else:
                 break

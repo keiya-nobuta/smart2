@@ -86,7 +86,8 @@ class TguiInteractiveInterface(TguiInterface):
             # select install type
             #==============================
             if stage == STAGE_INSTALL_TYPE:
-                install_type = PKGINSTTypeWindowCtrl(screen, Install_types, install_type)
+                #install_type = PKGINSTTypeWindowCtrl(screen, Install_types, install_type)
+                install_type = INSTALL_CUSTOMIZE
                 stage = STAGE_PACKAGE
                 selected_pkgs = []
                 selected_pkgs_spec = []
