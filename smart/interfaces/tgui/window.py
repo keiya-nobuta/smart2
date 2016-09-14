@@ -796,7 +796,7 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
     else:
         scroll = 0
 
-    hotkey_base_text = "SPACE/ENTER:select/unselect  A:select All  R:seaRch N:Next  B:Back  I:Info  X:eXit"
+    hotkey_base_text = "SPACE/ENTER:select/unselect  A:select/unselect All  R:seaRch N:Next  B:Back  I:Info  X:eXit"
     wrapper = textwrap.TextWrapper(width = main_width)
     hotkey_text = wrapper.fill(hotkey_base_text)
     if hotkey_text != hotkey_base_text:
