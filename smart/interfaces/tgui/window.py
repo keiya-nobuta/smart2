@@ -5,9 +5,15 @@
 import sys, os, copy, textwrap, snack, string, time, re
 from snack import * 
 
+ACTION_INSTALL = 0
+ACTION_REMOVE  = 1
+ACTION_UPDATE  = 2
+
 Confirm_type_list = [("Exit","\n Do you really terminate it?\n\n"), \
                      ("Confirm install","\n Do you want to begin installation?\n\n"), \
-                     ("License","\n Do you want to install GPLv3 packages?\n\n"), \
+                     ("License","\n Do you want to display GPLv3 packages?\n\n"), \
+                     ("Confirm remove","\n Do you want to begin removing?\n\n"), \
+                     ("Confirm update","\n Do you want to begin updating?\n\n") \
                     ]
 
 class pkgType:
@@ -56,39 +62,55 @@ def GetHotKeyMainSize(insScreen):
 
     return (width, height)
 #------------------------------------------------------------
-# def _StatusToggle(insLi, sHkey, iIdx, lstPkgList)
+# def _StatusToggle(insLi, sHkey, iIdx, selected_packages, packages, install_type)
 #
-#   package select window
+#   package select window, "selection" function.
 #
 # Input:
-#    insLi : instance of Listbox
-#    sHkey : hotkey selected
-#    iIdx : index selected
-#    selected_packages : selected_package
+#    insLi              : instance of Listbox
+#    sHkey              : hotkey selected
+#    iIdx               : index selected
+#    selected_packages  : selected_package
+#    packages           : display packages
+#    install_type       :INSTALL or REMOVE or UPDATE
 # Output:
 #    packages : showed packages
 #------------------------------------------------------------
 
-def _StatusToggle(insLi, sHkey, iIdx, selected_packages, packages):
+def _StatusToggle(insLi, sHkey, iIdx, selected_packages, packages, install_type):
     pkg = packages[iIdx]
     #print "select package : %s " % pkg.name
     if sHkey == " " or sHkey == "ENTER":
-        if not pkg.installed:
+        if install_type == ACTION_INSTALL and (not pkg.installed):
             if pkg in selected_packages:
                 selected_packages.remove(pkg)
                 newsign = " "
             else:
                 selected_packages.append(pkg)
                 newsign = "*"
+        elif install_type == ACTION_REMOVE:
+            if pkg in selected_packages:
+                selected_packages.remove(pkg)
+                newsign = "I"
+            else:
+                selected_packages.append(pkg)
+                newsign = "-"
+        elif install_type == ACTION_UPDATE:
+            if pkg in selected_packages:
+                selected_packages.remove(pkg)
+                newsign = "I"
+            else:
+                selected_packages.append(pkg)
+                newsign = ">"
         else:
             return insLi
     item = "[%s] %s" % (newsign, pkg.name)
     insLi.replace(item, iIdx)
     return insLi
 #------------------------------------------------------------
-# def _SelectAll(insLi, sHkey,numPackage,selected_packages, packages)
+# def _SelectAll(insLi, sHkey,numPackage,selected_packages, packages, install_type))
 #
-#   package select window
+#   package select window, "select all" function.
 #
 # Input:
 #    insLi             : instance of Listbox
@@ -96,32 +118,67 @@ def _StatusToggle(insLi, sHkey, iIdx, selected_packages, packages):
 #    numPackage        : number of showed packages
 #    selected_packages : selected_package
 #    packages          : showed packages
+#    install_type      : INSTALL or REMOVE or UPDATE
 # Output:
 #    insLi :changed instance of Listbox
 #------------------------------------------------------------
-def _SelectAll(insLi, sHkey, numPackage, selected_packages, packages):
-
-    haveSelected=False
+def _SelectAll(insLi, sHkey, numPackage, selected_packages, packages, \
+                                                       install_type):
+    haveSelected=False      
     for pkg in packages:
-        if (not pkg in selected_packages) and (not pkg.installed):
+        if (not pkg in selected_packages) and (install_type==ACTION_INSTALL and (not pkg.installed)or \
+                                               install_type==ACTION_REMOVE or \
+                                               install_type==ACTION_UPDATE):
             haveSelected=True
             break
-        # replace sign in list
-    if haveSelected :
-        for iIdx in range(0,numPackage):
-            pkg=packages[iIdx]
-            if (not pkg in selected_packages) and (not pkg.installed):
-                selected_packages.append(pkg)
-                item = "[%s] %s" % ("*", pkg.name)
-                insLi.replace(item,iIdx)
-    else:
-        for iIdx in range(0,numPackage):
-            pkg=packages[iIdx]
-            if (pkg in selected_packages) and (not pkg.installed):
-                selected_packages.remove(pkg)
-                item = "[%s] %s" % (" ", pkg.name)
-                insLi.replace(item,iIdx)
 
+#replace sign in list
+
+    if install_type == ACTION_INSTALL:
+        if haveSelected :
+            for iIdx in range(0,numPackage):
+                pkg=packages[iIdx]
+                if (not pkg in selected_packages) and (not pkg.installed):
+                    selected_packages.append(pkg)
+                    item = "[%s] %s" % ("*", pkg.name)
+                    insLi.replace(item,iIdx)
+        else:
+            for iIdx in range(0,numPackage):
+                pkg=packages[iIdx]
+                if (pkg in selected_packages) and (not pkg.installed):
+                    selected_packages.remove(pkg)
+                    item = "[%s] %s" % (" ", pkg.name)
+                    insLi.replace(item,iIdx)
+    elif install_type == ACTION_REMOVE:
+        if haveSelected :
+            for iIdx in range(0,numPackage):
+                pkg=packages[iIdx]
+                if not pkg in selected_packages:
+                    selected_packages.append(pkg)
+                    item = "[%s] %s" % ("-", pkg.name)
+                    insLi.replace(item,iIdx)
+        else:
+            for iIdx in range(0,numPackage):
+                pkg=packages[iIdx]
+                if pkg in selected_packages:
+                    selected_packages.remove(pkg)
+                    item = "[%s] %s" % ("I", pkg.name)
+                    insLi.replace(item,iIdx)
+    elif install_type == ACTION_UPDATE:
+        if haveSelected :
+            for iIdx in range(0,numPackage):
+                pkg=packages[iIdx]
+                if not pkg in selected_packages:
+                    selected_packages.append(pkg)
+                    item = "[%s] %s" % (">", pkg.name)
+                    insLi.replace(item,iIdx)
+        else:
+            for iIdx in range(0,numPackage):
+                pkg=packages[iIdx]
+                if pkg in selected_packages:
+                    selected_packages.remove(pkg)
+                    item = "[%s] %s" % ("I", pkg.name)
+                    insLi.replace(item,iIdx)
     return insLi
 
 #_SelectAll
@@ -406,6 +463,114 @@ def PKGINSTTypeWindow(insScreen, lstSubject, iPosition):
 
     insScreen.popWindow()
     return (myhotkeys[result], idx)
+#------------------------------------------------------------
+# def PKGINSTActionWindowCtrl()
+#
+#    Select install type
+#
+# Input:
+#    insScreen         : screen instance
+#    insPKGINSTXmlinfo : xml information
+#    insPKGINSTPkginfo : package information
+#    iType             : select type (first -1)
+#
+# Output:
+#    int  : select type
+#------------------------------------------------------------
+def PKGINSTActionWindowCtrl(insScreen, lstSubject, iType):
+
+    type = iType
+
+    while True:
+        (hkey, type) = PKGINSTActionWindow(insScreen, lstSubject, type)
+
+        if hkey == "ENTER" or hkey == " ":
+            # select/unselect
+            return type
+
+        elif hkey == "i":
+            # info
+            description = lstSubject[type][1]
+            subject = lstSubject[type][0]
+            PKGINSTTypeInfoWindow(insScreen, subject, description)
+
+        elif hkey == "x":
+            # exit
+            exit_hkey = HotkeyExitWindow(insScreen)
+            if exit_hkey == "y":
+                if insScreen != None:
+                    StopHotkeyScreen(insScreen)
+                    insScreen = None
+                sys.exit(0)
+
+
+#------------------------------------------------------------
+# def PKGINSTActionWindow()
+#
+#   Display action select window.
+#
+# Input:
+#   insScreen  : screen instance
+#   lstSubject : install type subject list
+#      [ str ]
+#        str : subject of each install type
+#   iPosition  : current entry position
+# Output:
+#   str   : pressed hotkey "ENTER", " ", "i", or "x"
+#   int   : position
+#------------------------------------------------------------
+def PKGINSTActionWindow(insScreen, lstSubject, iPosition):
+
+    # Create CheckboxTree instance
+    (main_width, main_height) = GetHotKeyMainSize(insScreen)
+
+    if len(lstSubject) > main_height:
+        scroll = 1
+    else:
+        scroll = 0
+
+    li = snack.Listbox(main_height, scroll = scroll, width = main_width)
+
+    idx = 0
+    for idx in range(len(lstSubject)):
+        str = "%s" % lstSubject[idx][0]
+        li.append(str, idx)
+
+    num_subject = len(lstSubject)
+    if num_subject > iPosition:
+        li.setCurrent(iPosition)
+    else:
+        li.setCurrent(num_subject - 1)
+    # Create Text instance
+    t1 = snack.Textbox(main_width, 1, "-" * main_width)
+    text = "SPACE/ENTER:select  I:Info  X:eXit"
+    t2 = snack.Textbox(main_width, 1, text)
+
+    # Create Grid instance
+    g = snack.GridForm(insScreen, "Select your operation", 1, 3)
+    g.add(li, 0, 0)
+    g.add(t1, 0, 1, (-1, 0, -1, 0))
+    g.add(t2, 0, 2, (0, 0, 0, -1))
+
+    myhotkeys = {"ENTER" : "ENTER", \
+                 " "     : " ", \
+                 "i"     : "i", \
+                 "I"     : "i", \
+                 "x"     : "x", \
+                 "X"     : "x"}
+    for x in myhotkeys.keys():
+        g.addHotKey(x)
+
+    # Display window
+    while True:
+        result = g.run()
+        if myhotkeys.has_key(result):
+            idx = li.current()
+            break
+
+    insScreen.popWindow()
+    return (myhotkeys[result], idx)
+
 
 #------------------------------------------------------------
 # def PKGINSTPackageInfoWindow()
@@ -438,7 +603,8 @@ def PKGINSTPackageInfoWindow(insScreen, ctrl, pkg):
         summary = info.getSummary()
         if summary:
             summ = summary
-            desc = info.getDescription()
+#           desc = info.getDescription()
+            desc = info.getSource()
             licence = info.getLicense()
             break
     
@@ -777,12 +943,14 @@ def PKGTypeSelectWindowCtrl(insScreen, pkgTypeList):
 #   lTargetSize : target size
 #   lHostSize   : host size
 #   search      : search string
+#   install_type: INSTALL or REMOVE or UPDATE
 # Output:
 #   str   : pressed hotkey "r", "f", "c", "n", "b", "d", "s", "i", or "x"
 #   int   : position
 #   lst   : package info list (updated)
 #------------------------------------------------------------
-def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTargetSize, lHostSize, search):
+def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTargetSize, lHostSize, search, \
+                                                                                               install_type):
     installed_pkgs = 0
 
 
@@ -879,13 +1047,15 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
         if myhotkeys.has_key(result):
             if myhotkeys[result] == "ENTER" or \
                myhotkeys[result] == " ":
-                li = _StatusToggle(li, myhotkeys[result], idx, selected_packages, packages)
+                li = _StatusToggle(li, myhotkeys[result], idx, selected_packages, \
+                                                          packages, install_type)
                 idx += 1
                 if idx >= num_package:
                     idx = num_package - 1
                 li.setCurrent(idx)
             elif myhotkeys[result]=="a":        ###
-                li = _SelectAll(li, myhotkeys[result],num_package, selected_packages, packages)
+                li = _SelectAll(li, myhotkeys[result],num_package, selected_packages, \
+                                                         packages, install_type)
                 li.setCurrent(idx)
             else:
                 break

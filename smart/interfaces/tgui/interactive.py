@@ -13,14 +13,23 @@ _TXT_ROOT_TITLE = "Package Installer"
 Install_types = [("Install All", "If you choose it, all packages are selected."), \
                 ("Busybox base", "Busybox base sample."), \
                 ("Customize", "Default, no packages are selected, your can choose packages that you want.")]
+Install_actions= [("Install", "Choose it to install packages."), \
+                ("Remove", "Choose it to remove packages"), \
+                ("Update", "Choose it to update packages")]
 
-INSTALL_ALL = 0
-INSTALL_BUSYBOX = 1
-INSTALL_CUSTOMIZE = 2
+INSTALL_ALL       = 2
+INSTALL_BUSYBOX   = 1
+INSTALL_CUSTOMIZE = 0
 
-CONFIRM_EXIT = 0
+ACTION_INSTALL = 0
+ACTION_REMOVE  = 1
+ACTION_UPDATE  = 2
+
+CONFIRM_EXIT    = 0
 CONFIRM_INSTALL = 1
 CONFIRM_LICENSE = 2
+CONFIRM_REMOVE  = 3
+CONFIRM_UPDATE  = 4
 
 class TguiInteractiveInterface(TguiInterface):
     
@@ -55,7 +64,8 @@ class TguiInteractiveInterface(TguiInterface):
         if screen == None:
             sys.exit(1)
 
-        install_type = INSTALL_ALL
+        install_type   = INSTALL_ALL
+        install_action = ACTION_INSTALL
         stage = STAGE_INSTALL_TYPE
  
         def __init_pkg_type():
@@ -87,7 +97,8 @@ class TguiInteractiveInterface(TguiInterface):
             #==============================
             if stage == STAGE_INSTALL_TYPE:
                 #install_type = PKGINSTTypeWindowCtrl(screen, Install_types, install_type)
-                install_type = INSTALL_CUSTOMIZE
+                install_type  = PKGINSTActionWindowCtrl(screen, Install_actions, install_type) 
+                #install_type = INSTALL_CUSTOMIZE
                 stage = STAGE_PACKAGE
                 selected_pkgs = []
                 selected_pkgs_spec = []
@@ -130,9 +141,19 @@ class TguiInteractiveInterface(TguiInterface):
                      stage = STAGE_PKG_TYPE
                 elif result == "n":
                     for pkg in selected_pkgs:
-                        transaction.enqueue(pkg, INSTALL)
+                        if install_type==ACTION_INSTALL:
+                            transaction.enqueue(pkg, INSTALL)
+                        elif install_type==ACTION_REMOVE:
+                            transaction.enqueue(pkg, REMOVE)
+                        elif install_type==ACTION_UPDATE:
+                            transaction.enqueue(pkg, UPGRADE)
                     for pkg in selected_pkgs_spec:
-                        transaction.enqueue(pkg, INSTALL)
+                        if install_type==ACTION_INSTALL:
+                            transaction.enqueue(pkg, INSTALL)
+                        elif install_type==ACTION_REMOVE:
+                            transaction.enqueue(pkg, REMOVE)
+                        elif install_type==ACTION_UPDATE:
+                            transaction.enqueue(pkg, UPGRADE)
                     transaction.run()
                     if no_gpl3:
                         oldchangeset = self._changeset
@@ -140,7 +161,10 @@ class TguiInteractiveInterface(TguiInterface):
                         result = self.confirmChange(screen, oldchangeset, newchangeset)
                         #continue to install
                         if result == "y":
-                            hkey = HotkeyExitWindow(screen, confirm_type=CONFIRM_INSTALL)
+                            if install_type == ACTION_INSTALL: confirm_type = CONFIRM_INSTALL
+                            if install_type == ACTION_REMOVE :  confirm_type = CONFIRM_REMOVE
+                            if install_type == ACTION_REMOVE:confirm_type=CONFIRM_REMOVE
+                            hkey = HotkeyExitWindow(screen, confirm_type)
                             if hkey == "y":
                                 if screen != None:
                                     StopHotkeyScreen(screen)
@@ -265,12 +289,20 @@ class TguiInteractiveInterface(TguiInterface):
             else:
                 display_pkgs = []
 
-            if install_type == INSTALL_ALL:
-                selected_pkgs = copy.copy(display_pkgs)
+            #if install_type == INSTALL_ALL:
+            #    selected_pkgs = copy.copy(display_pkgs)
+            if (install_type==ACTION_REMOVE) or (install_type==ACTION_UPDATE):
+                for pkg in packages:
+                    if not pkg.installed:
+                        if pkg in display_pkgs:
+                            display_pkgs.remove(pkg)
 
             if len(display_pkgs) == 0:
                 if not no_gpl3:
-                    hkey = HotkeyExitWindow(screen, confirm_type=CONFIRM_INSTALL)
+                    if install_type == ACTION_INSTALL: confirm_type=CONFIRM_INSTALL
+                    if install_type == ACTION_REMOVE: confirm_type=CONFIRM_REMOVE
+                    if install_type == ACTION_UPDATE:confirm_type=CONFIRM_UPDATE
+                    hkey = HotkeyExitWindow(screen, confirm_type)
                     if hkey == "y":
                         return ("n", selected_pkgs, packages)
                     elif hkey == "n":
@@ -300,19 +332,26 @@ class TguiInteractiveInterface(TguiInterface):
                     elif pkg.name.endswith('-ptest'):
                         display_pkgs.remove(pkg)
                         pkgs_spec.append(pkg)
-            if install_type == INSTALL_ALL:
-                selected_pkgs = copy.copy(display_pkgs)
-            elif install_type == INSTALL_BUSYBOX:
-                selected_pkgs = [] 
-                first_busybox_position = 0
-                for pkg in display_pkgs:
-                    if pkg.name.startswith('busybox'): 
-                        selected_pkgs.append(pkg)
-                        if first_busybox_position == 0:
-                            first_busybox_position = position
-                    position += 1
-                position = first_busybox_position
-        
+            #if install_type == INSTALL_ALL:
+            #    selected_pkgs = copy.copy(display_pkgs)
+            #elif install_type == INSTALL_BUSYBOX:
+            #    selected_pkgs = [] 
+            #    first_busybox_position = 0
+            #    for pkg in display_pkgs:
+            #        if pkg.name.startswith('busybox'): 
+            #            selected_pkgs.append(pkg)
+            #            if first_busybox_position == 0:
+            #                first_busybox_position = position
+            #        position += 1
+            #    position = first_busybox_position
+            if (install_type==ACTION_REMOVE) or (install_type==ACTION_UPDATE):
+                for pkg in packages:
+                    if not pkg.installed:
+                        if pkg in display_pkgs:    
+                            display_pkgs.remove(pkg)
+        if len(display_pkgs)==0:
+            stage = STAGE_NEXT   
+
         while True:
             if stage == STAGE_SELECT:
                 if search == None:
@@ -322,7 +361,8 @@ class TguiInteractiveInterface(TguiInterface):
                                                             position, \
                                                             iTargetSize, \
                                                             iHostSize, \
-                                                            search)
+                                                            search, \
+                                                            install_type)
                 else:
                     (hkey, search_position, pkglist) = PKGINSTPackageWindow(screen, \
                                                              searched_ret, \
@@ -330,7 +370,8 @@ class TguiInteractiveInterface(TguiInterface):
                                                              search_position, \
                                                              iTargetSize, \
                                                              iHostSize, \
-                                                             search)
+                                                             search, \
+                                                             install_type)
 
                 if hkey == "n":
                     stage = STAGE_NEXT
@@ -350,7 +391,10 @@ class TguiInteractiveInterface(TguiInterface):
                 #if in special type packages(dev,doc,locale) select Interface:
                 else:
                     if not no_gpl3:
-                        hkey = HotkeyExitWindow(screen, confirm_type=CONFIRM_INSTALL)
+                        if install_type == ACTION_INSTALL:confirm_type=CONFIRM_INSTALL
+                        if install_type == ACTION_REMOVE:confirm_type=CONFIRM_REMOVE
+                        if install_type == ACTION_UPDATE:confirm_type=CONFIRM_UPDATE
+                        hkey = HotkeyExitWindow(screen, confirm_type)
                         if hkey == "y":
                             return ("n", selected_pkgs, packages)
                         elif hkey == "n":
