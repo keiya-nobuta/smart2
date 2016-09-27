@@ -64,8 +64,7 @@ class TguiInteractiveInterface(TguiInterface):
         if screen == None:
             sys.exit(1)
 
-        install_type   = INSTALL_ALL
-        install_action = ACTION_INSTALL
+        install_type   = ACTION_INSTALL
         stage = STAGE_INSTALL_TYPE
  
         def __init_pkg_type():
@@ -104,11 +103,14 @@ class TguiInteractiveInterface(TguiInterface):
                 selected_pkgs_spec = []
                 pkgs_spec = []
             #if install_type != INSTALL_BUSYBOX:
-                result = HotkeyExitWindow(screen, confirm_type=CONFIRM_LICENSE)
-                if result == "y":
-                    no_gpl3 = False
+                if install_type == ACTION_INSTALL:
+                    result = HotkeyExitWindow(screen, confirm_type=CONFIRM_LICENSE)
+                    if result == "y":
+                        no_gpl3 = False
+                    else:
+                        no_gpl3 = True
                 else:
-                    no_gpl3 = True
+                    no_gpl3 = False
             #==============================
             # select package
             #==============================
