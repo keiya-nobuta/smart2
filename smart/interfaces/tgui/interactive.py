@@ -91,19 +91,61 @@ class TguiInteractiveInterface(TguiInterface):
         selected_pkgs = []
         selected_pkgs_spec = []
         pkgs_spec = []
+        src_path=""
+        output_path=""
+
         while True:
             #==============================
             # select install type
             #==============================
             if stage == STAGE_INSTALL_TYPE:
-                #install_type = PKGINSTTypeWindowCtrl(screen, Install_types, install_type)
-                install_type  = PKGINSTActionWindowCtrl(screen, Install_actions, install_type) 
-                #install_type = INSTALL_CUSTOMIZE
-                stage = STAGE_PACKAGE
+
+                install_type  = PKGINSTActionWindowCtrl(screen, Install_actions, install_type)
+
+                if install_type==ACTION_GET_SOURCE:
+                    src_path=PKGINSTPathInputWindow(screen, \
+                                                    True, \
+                                                    "  Input Path  ", \
+                                                    "Specify the path where the source archives you want to download:")
+                    if not src_path == None:
+                        output_path = PKGINSTPathInputWindow(screen, \
+                                                             False, \
+                                                             "  Input Path  ", \
+                                                             "  Specify the output path:                                 ", \
+                                                             "./source")
+                        if not output_path == None:
+                            stage = STAGE_PACKAGE
+                        else:
+                            continue
+                    else:
+                        continue
+
+
+                elif install_type== ACTION_GET_SPDX:
+                    src_path=PKGINSTPathInputWindow(screen, \
+                                                    True, \
+                                                    "  Input Path  ", \
+                                                    "Specify the path where the SPDX files you want to download:")
+                    if not src_path == None:
+                        output_path = PKGINSTPathInputWindow(screen, \
+                                                             False, \
+                                                             "  Input Path  ", \
+                                                             "  Specify the output path:                                 ", \
+                                                             "./spdx")
+                        if not output_path == None:
+                            stage = STAGE_PACKAGE
+                        else:
+                            continue
+                    else:
+                        continue
+                else:
+                    stage = STAGE_PACKAGE
+
+
                 selected_pkgs = []
                 selected_pkgs_spec = []
                 pkgs_spec = []
-            #if install_type != INSTALL_BUSYBOX:
+
                 if install_type == ACTION_INSTALL:
                     result = HotkeyExitWindow(screen, confirm_type=CONFIRM_LICENSE)
                     if result == "y":
@@ -112,6 +154,7 @@ class TguiInteractiveInterface(TguiInterface):
                         no_gpl3 = True
                 else:
                     no_gpl3 = False
+
 
 
             #==============================
@@ -168,7 +211,7 @@ class TguiInteractiveInterface(TguiInterface):
             # ==============================
             elif stage == STAGE_PROCESS:
 
-                for pkg in selected_pkgs:
+                for pkg in selected_pkgs:           #selected_pkgs
                     if install_type==ACTION_INSTALL:
                         transaction.enqueue(pkg, INSTALL)
                     elif install_type==ACTION_REMOVE:
@@ -176,9 +219,10 @@ class TguiInteractiveInterface(TguiInterface):
                     elif install_type==ACTION_UPGRADE:
                         transaction.enqueue(pkg, UPGRADE)
 
-                if install_type == ACTION_INSTALL:
+                if install_type == ACTION_INSTALL:  #selected_pkgs_spec
                     for pkg in selected_pkgs_spec:
                         transaction.enqueue(pkg, INSTALL)
+
                 transaction.run()
                 if no_gpl3:
                     oldchangeset = self._changeset

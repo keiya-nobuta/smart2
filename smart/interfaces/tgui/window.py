@@ -789,6 +789,70 @@ def _make_grid_search(insScreen, search_id):
 
     return e, b, g
 
+def _make_grid_input_path(insScreen, title, label, strText):
+
+    l = snack.Label(label)
+    l1 = snack.Label(" ")
+    e = snack.Entry(50, strText)
+    b = snack.ButtonBar(insScreen,(("   OK   ", "ok"), (" Cancel ", "cancel")))
+
+    g = snack.GridForm(insScreen, title, 3, 6)
+    g.add(l, 0, 1)
+    g.add(l1,0, 2)
+    g.add(e, 0, 3)
+    g.add(l1,0, 4)
+    g.add(b, 0, 5)
+
+    return e, b, g
+#------------------------------------------------------------
+# def PKGINSTPathInputWindow()
+#
+#   Display a window which you can input a path.
+#
+# Input:
+#       title : Title of the window
+#       label : A text aim to guide the users operation
+# Output:
+#   path   : path you have inputed
+#------------------------------------------------------------
+def PKGINSTPathInputWindow(insScreen, check_dir_exist, title, label,text_prev=""):
+
+    rtn_sts = None
+
+    while rtn_sts == None:
+        (e, b, g) = _make_grid_input_path(insScreen, title, label , text_prev)
+        r = g.runOnce()
+        insScreen.popWindow()
+        str = e.value()
+
+        if b.buttonPressed(r) == "ok":
+            #  judge if or not the input is correct
+            if check_dir_exist :
+                if os.path.isdir(str) :
+                    rtn_sts=str
+                else:
+                    buttons = ['  OK  ']
+                    (w, h) = GetButtonMainSize(insScreen)
+                    rr = ButtonInfoWindow(insScreen, "  Error !  ", "Not a correct path! Input again, please !", \
+                                          w, h, buttons)
+            else:
+                real_path=os.path.realpath(str)
+                folder=os.path.split(real_path)
+                folder='/'.join(folder[:-1])
+                if os.path.isdir(folder):
+                    rtn_sts=real_path
+                else:
+                    buttons = ['  OK  ']
+                    (w, h) = GetButtonMainSize(insScreen)
+                    rr = ButtonInfoWindow(insScreen, \
+                                          "  Error !  ", \
+                                          "The path but the last folder must exist. Please check it ! ", \
+                                          w, h, buttons)
+        else:
+            break
+        text_prev = str
+    return rtn_sts
+
 def PKGINSTPackageSearchWindow(insScreen):
 
     search_id = ""
