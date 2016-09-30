@@ -15,7 +15,7 @@ Install_actions = [("Install", "Choose it to install packages."), \
                    ("Remove", "Choose it to remove packages"), \
                    ("Upgrade", "Choose it to upgrade packages"), \
                    ("Get source archive", "Choose it to create source archive"), \
-                   ("Get spdx file", "Choose it to get SPDX files") \
+                   ("Get spdx archive", "Choose it to get SPDX archive") \
                   ]
 
 ACTION_INSTALL     = 0
@@ -557,28 +557,42 @@ class TguiInteractiveInterface(TguiInterface):
 
                 info = loader.getInfo(pkg)
                 src = info.getSource()
-                license = info.getLicense()
+                lic = info.getLicense()
                 srcdir = src_dir
 
                 if srcdir:
+
                     srcpath = srcdir + "/" + src + ".src.rpm"
                     srcdpath = output_dir
                     if not os.path.exists(srcdpath):
                         os.mkdir(srcdpath)
-                    srcdpath = srcdpath + "/"
+                    srcdpath = srcdpath + "/" + lic
                     if not os.path.exists(srcdpath):
                         os.mkdir(srcdpath)
+
                     srcdpath = srcdpath + '/' + src + ".src.rpm"
                     if srcdir.startswith("/"):
+
+                        ctnget += 1
+                        str = "[" + ("%d" % int(ctn * 100 / numpkg)).rjust(3) + "%]" + ("%d" % ctnget).rjust(4) + \
+                              ": Getting: " + src + ".src.rpm"
+                        if len(str) > 43:
+                            str = str[:40] + "..."
+
+                        sys.stdout.write(str.ljust(43))
+
                         if os.path.exists(srcpath):
+
                             if not os.path.exists(srcdpath):
                                 shutil.copyfile(srcpath, srcdpath)
-                                ctnget+=1
-                                sys.stdout.write( "[%d%%]%d: Getting: " % (int(ctn * 100 / numpkg), ctnget) + src + ".src.rpm" + "\n")
+                                sys.stdout.write("  OK\n")
                                 break
-                            break
+                            else:
+                                sys.stdout.write("  Exists\n")
+                                break
                         else:
-                            sys.stderr.write("Source rpm: " + srcpath + " is not exists....\n")
+                            sys.stdout.write("  No source rpm\n")
+                            sys.stderr.write("Source rpm: " + srcpath + " does not exists....\n")
                             break
                     elif srcdir.startswith("http"):
                         if not os.path.exists(srcdpath):
@@ -620,7 +634,7 @@ class TguiInteractiveInterface(TguiInterface):
                 src = info.getSource()
                 src = "-".join(src.split("-")[:-1])
 
-                license = info.getLicense()
+                lic = info.getLicense()
                 srcdir = src_dir
 
                 if srcdir:
@@ -628,22 +642,32 @@ class TguiInteractiveInterface(TguiInterface):
                     srcdpath = output_dir
                     if not os.path.exists(srcdpath):
                         os.mkdir(srcdpath)
-                    srcdpath = srcdpath + "/"
+                    srcdpath = srcdpath + "/" + lic
                     if not os.path.exists(srcdpath):
                         os.mkdir(srcdpath)
 
                     srcdpath = srcdpath + '/' + src + ".spdx"
+
+                    ctnget += 1
+                    str = "[" + ("%d" % int(ctn * 100 / numpkg)).rjust(3) + "%]" + ("%d" % ctnget).rjust(4) + \
+                          ": Getting: " + src + ".spdx"
+                    if len(str) > 43:
+                        str = str[:40] + "..."
+
+                    sys.stdout.write(str.ljust(43))
+
                     if srcdir.startswith("/"):
                         if os.path.exists(srcpath):
                             if not os.path.exists(srcdpath):
                                 shutil.copyfile(srcpath, srcdpath)
-                                ctnget += 1
-                                sys.stdout.write("[%d%%]%d: Getting: " % (
-                                int(ctn * 100 / numpkg), ctnget) + src + ".spdx" + "\n")
+                                sys.stdout.write("  OK\n")
                                 break
-                            break
+                            else:
+                                sys.stdout.write("  Exists\n")
+                                break
                         else:
-                            sys.stderr.write("Source SPDX file: " + srcpath + " is not exists....\n")
+                            sys.stdout.write("  No SPDX file\n")
+                            sys.stderr.write("Source SPDX file: " + srcpath + " does not exist....\n")
                             break
                 else:
                     break

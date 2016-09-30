@@ -17,9 +17,11 @@ Confirm_type_list = [("Exit","\n Do you really terminate it?\n\n"), \
                      ("License","\n Do you want to display GPLv3 packages?\n\n"), \
                      ("Confirm remove","\n Do you want to begin removing?\n\n"), \
                      ("Confirm upgrade","\n Do you want to begin upgrading?\n\n"), \
-                     ("Confirm get source","\n Do you want to begin getting source?\n\n"), \
-                     ("Confirm get SPDX","\n Do you want to begin getting SPDX files?\n\n") \
+                     ("Confirm get source","\n Begin getting source archive?\n\n"), \
+                     ("Confirm get SPDX","\n Begin getting SPDX archive?\n\n") \
                     ]
+
+SIGN_SELECT=["*", "-", "U", "S", "S"]
 
 class pkgType:
     name = None
@@ -92,28 +94,14 @@ def _StatusToggle(insLi, sHkey, iIdx, selected_packages, packages, install_type)
                 newsign = " "
             else:
                 selected_packages.append(pkg)
-                newsign = "*"
-        elif install_type == ACTION_REMOVE:
+                newsign = SIGN_SELECT[install_type]
+        elif not install_type == ACTION_INSTALL:
             if pkg in selected_packages:
                 selected_packages.remove(pkg)
                 newsign = " "
             else:
                 selected_packages.append(pkg)
-                newsign = "-"
-        elif install_type == ACTION_UPGRADE:
-            if pkg in selected_packages:
-                selected_packages.remove(pkg)
-                newsign = " "
-            else:
-                selected_packages.append(pkg)
-                newsign = "U"
-        elif install_type == ACTION_GET_SOURCE or install_type == ACTION_GET_SPDX :
-            if pkg in selected_packages:
-                selected_packages.remove(pkg)
-                newsign = " "
-            else:
-                selected_packages.append(pkg)
-                newsign = "S"
+                newsign = SIGN_SELECT[install_type]
         else:
             return insLi
     item = "[%s] %s" % (newsign, pkg.name)
@@ -151,7 +139,7 @@ def _SelectAll(insLi, sHkey, numPackage, selected_packages, packages, \
                 pkg=packages[iIdx]
                 if (not pkg in selected_packages) and (not pkg.installed):
                     selected_packages.append(pkg)
-                    item = "[%s] %s" % ("*", pkg.name)
+                    item = "[%s] %s" % (SIGN_SELECT[install_type], pkg.name)
                     insLi.replace(item,iIdx)
         else:
             for iIdx in range(0,numPackage):
@@ -161,45 +149,13 @@ def _SelectAll(insLi, sHkey, numPackage, selected_packages, packages, \
                     item = "[%s] %s" % (" ", pkg.name)
                     insLi.replace(item,iIdx)
 
-    elif install_type == ACTION_REMOVE:
+    else:
         if haveSelected :
             for iIdx in range(0,numPackage):
                 pkg=packages[iIdx]
                 if not pkg in selected_packages:
                     selected_packages.append(pkg)
-                    item = "[%s] %s" % ("-", pkg.name)
-                    insLi.replace(item,iIdx)
-        else:
-            for iIdx in range(0,numPackage):
-                pkg=packages[iIdx]
-                if pkg in selected_packages:
-                    selected_packages.remove(pkg)
-                    item = "[%s] %s" % (" ", pkg.name)
-                    insLi.replace(item,iIdx)
-
-    elif install_type == ACTION_UPGRADE:
-        if haveSelected :
-            for iIdx in range(0,numPackage):
-                pkg=packages[iIdx]
-                if not pkg in selected_packages:
-                    selected_packages.append(pkg)
-                    item = "[%s] %s" % ("U", pkg.name)
-                    insLi.replace(item,iIdx)
-        else:
-            for iIdx in range(0,numPackage):
-                pkg=packages[iIdx]
-                if pkg in selected_packages:
-                    selected_packages.remove(pkg)
-                    item = "[%s] %s" % (" ", pkg.name)
-                    insLi.replace(item,iIdx)
-
-    elif install_type == ACTION_GET_SOURCE or install_type == ACTION_GET_SPDX:
-        if haveSelected :
-            for iIdx in range(0,numPackage):
-                pkg=packages[iIdx]
-                if not pkg in selected_packages:
-                    selected_packages.append(pkg)
-                    item = "[%s] %s" % ("S", pkg.name)
+                    item = "[%s] %s" % (SIGN_SELECT[install_type], pkg.name)
                     insLi.replace(item,iIdx)
         else:
             for iIdx in range(0,numPackage):
@@ -1075,7 +1031,7 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
             status = "I"
             installed_pkgs += 1
         elif x in selected_packages:
-            status = "*"
+            status = SIGN_SELECT[install_type]
         else:
             status = " "
         str = "[%s] %s " % (status, x.name)
