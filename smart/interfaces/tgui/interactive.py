@@ -579,19 +579,19 @@ class TguiInteractiveInterface(TguiInterface):
                         if len(str) > 43:
                             str = str[:40] + "..."
 
-                        sys.stdout.write(str.ljust(43))
+                        str=str.ljust(43)
 
                         if os.path.exists(srcpath):
 
                             if not os.path.exists(srcdpath):
                                 shutil.copyfile(srcpath, srcdpath)
-                                sys.stdout.write("  OK\n")
+                                sys.stdout.write(str + "  OK\n")
                                 break
                             else:
-                                sys.stdout.write("  Exists\n")
+                                sys.stdout.write(str + "  Exists\n")
                                 break
                         else:
-                            sys.stdout.write("  No source rpm\n")
+                            sys.stdout.write(str + "  No source rpm\n")
                             sys.stderr.write("Source rpm: " + srcpath + " does not exists....\n")
                             break
                     elif srcdir.startswith("http"):
@@ -654,19 +654,19 @@ class TguiInteractiveInterface(TguiInterface):
                     if len(str) > 43:
                         str = str[:40] + "..."
 
-                    sys.stdout.write(str.ljust(43))
+                    str=str.ljust(43)
 
                     if srcdir.startswith("/"):
                         if os.path.exists(srcpath):
                             if not os.path.exists(srcdpath):
                                 shutil.copyfile(srcpath, srcdpath)
-                                sys.stdout.write("  OK\n")
+                                sys.stdout.write(str + "  OK\n")
                                 break
                             else:
-                                sys.stdout.write("  Exists\n")
+                                sys.stdout.write(str + "  Exists\n")
                                 break
                         else:
-                            sys.stdout.write("  No SPDX file\n")
+                            sys.stdout.write(str + "  No SPDX file\n")
                             sys.stderr.write("Source SPDX file: " + srcpath + " does not exist....\n")
                             break
                 else:
