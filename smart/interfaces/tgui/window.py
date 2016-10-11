@@ -19,7 +19,8 @@ Confirm_type_list = [("Exit","\n Do you really terminate it?\n\n"), \
                      ("Confirm upgrade","\n Do you want to begin upgrading?\n\n"), \
                      ("Confirm get source","\n Begin getting source archive?\n\n"), \
                      ("Confirm get SPDX","\n Begin getting SPDX archive?\n\n") \
-                    ]
+                     ]
+Attention_type_list=[("Attention!","\n You must installed some packages first!\n\n")]
 
 SIGN_SELECT=["*", "-", "U", "S", "S"]
 
@@ -236,6 +237,31 @@ def HotkeyExitWindow(insScreen, confirm_type=0):
                  40, 4, myhotkeys, "Y:yes  N:no")
 
     return result
+
+
+# ------------------------------------------------------------
+# def HotkeyAttentionWindow(insScreen, confirm_install=False)
+#
+#   Display "Attention" window .
+#
+# Input:
+#   insScreen : screen instance
+#   attention_type: index of  attention text list
+# Output:
+#   int       : "ok"
+# ------------------------------------------------------------
+def HotkeyAttentionWindow(insScreen, attention_type):
+    # Display Exit Window
+    myhotkeys = {"ENTER": "y", \
+                 " ": "y" \
+                }
+
+    result = HotkeyInfoWindow(insScreen, Attention_type_list[attention_type][0], \
+                              Attention_type_list[attention_type][1], \
+                              40, 4, myhotkeys, "Enter/Space:OK")
+
+    return result
+
 
 #------------------------------------------------------------
 # def StopHotkeyScreen()
@@ -1002,6 +1028,7 @@ def PKGTypeSelectWindowCtrl(insScreen, pkgTypeList):
 def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTargetSize, lHostSize, search, \
                                                                                                install_type):
     installed_pkgs = 0
+    numChange=True      #Select or unselect operation that lead selected number change
 
 
     # Create CheckboxTree instance
@@ -1052,9 +1079,8 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
     li.setCurrent(iPosition)
 
     # Create Text instance
+    text=""
     t1 = snack.Textbox(main_width, 1, "-" * main_width)
-    text = "All Packages [%ld]    Installed Packages    [%ld] Selected Packages [%ld]" % \
-          (num_package, installed_pkgs, len(selected_packages))
     t2 = snack.Textbox(main_width, 1, text)
     t3 = snack.Textbox(main_width, 1, "-" * main_width)
     t4 = snack.Textbox(main_width, hotkey_line, hotkey_text)
@@ -1071,6 +1097,9 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
     g.add(t2, 0, 2)
     g.add(t3, 0, 3, (-1, 0, -1, 0))
     g.add(t4, 0, 4, (0, 0, 0, -1))
+
+
+
 
 ############# append test key 'S' ####
     myhotkeys = {"ENTER" : "ENTER", \
@@ -1090,13 +1119,26 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
 
     for x in myhotkeys.keys():
         g.addHotKey(x)
+
 #####################################
     while True:
+
+        if numChange:
+            if install_type == ACTION_INSTALL:
+                text = "All Packages [%ld]    Installed Packages [%ld]    Selected Packages [%ld]" % \
+                       (num_package, installed_pkgs, len(selected_packages))
+            else:
+                text = "All Packages [%ld]    Selected Packages [%ld]" % \
+                       (num_package, len(selected_packages))
+            t2.setText(text)
+            numChange = False
+
         result = g.run()
         idx = li.current()
         if myhotkeys.has_key(result):
             if myhotkeys[result] == "ENTER" or \
                myhotkeys[result] == " ":
+                numChange=True
                 li = _StatusToggle(li, myhotkeys[result], idx, selected_packages, \
                                                           packages, install_type)
                 idx += 1
@@ -1107,8 +1149,10 @@ def PKGINSTPackageWindow(insScreen, packages, selected_packages, iPosition, lTar
                 li = _SelectAll(li, myhotkeys[result],num_package, selected_packages, \
                                                          packages, install_type)
                 li.setCurrent(idx)
+                numChange = True
             else:
                 break
+
     insScreen.popWindow()
     return (myhotkeys[result], idx, selected_packages)
 

@@ -32,6 +32,8 @@ CONFIRM_UPGRADE    = 4
 CONFIRM_GET_SOURCE = 5
 CONFIRM_GET_SPDX   = 6
 
+ATTENTON_NONE      = 0
+
 class TguiInteractiveInterface(TguiInterface):
     
     def __init__(self, ctrl):
@@ -166,6 +168,7 @@ class TguiInteractiveInterface(TguiInterface):
                 if result == "b":
                     # back
                     stage = STAGE_INSTALL_TYPE
+
                 elif result == "n":
                     if install_type == ACTION_INSTALL:
                         stage = STAGE_PKG_TYPE
@@ -384,17 +387,16 @@ class TguiInteractiveInterface(TguiInterface):
 
             if len(display_pkgs) == 0:
                 if not no_gpl3:
-                    if install_type == ACTION_INSTALL     : confirm_type = CONFIRM_INSTALL
-                    if install_type == ACTION_REMOVE      : confirm_type = CONFIRM_REMOVE
-                    if install_type == ACTION_UPGRADE     : confirm_type = CONFIRM_UPGRADE
-                    if install_type == ACTION_GET_SOURCE  : confirm_type = CONFIRM_GET_SOURCE
-                    if install_type == ACTION_GET_SPDX    : confirm_type = CONFIRM_GET_SPDX
-
-                    hkey = HotkeyExitWindow(screen, confirm_type)
-                    if hkey == "y":
-                        return ("n", selected_pkgs, packages)
-                    elif hkey == "n":
-                        return ("k", selected_pkgs, packages)
+                    if install_type == ACTION_INSTALL     :
+                        confirm_type = CONFIRM_INSTALL
+                        hkey = HotkeyExitWindow(screen, confirm_type)
+                        if hkey == "y":
+                            return ("n", selected_pkgs, packages)
+                        elif hkey == "n":
+                            return ("k", selected_pkgs, packages)
+                    else:
+                        hkey=HotkeyAttentionWindow(screen,ATTENTON_NONE)
+                        return ("b", selected_pkgs, packages)
                 else:
                     return ("n", selected_pkgs, packages)
         else:
@@ -429,8 +431,11 @@ class TguiInteractiveInterface(TguiInterface):
 
 
         if len(display_pkgs)==0:
-            stage = STAGE_NEXT   
-
+            if install_type==ACTION_INSTALL:
+                stage = STAGE_NEXT
+            else:
+                hkey = HotkeyAttentionWindow(screen, ATTENTON_NONE)
+                return ("b", selected_pkgs, packages)
         while True:
             if stage == STAGE_SELECT:
                 if search == None:
