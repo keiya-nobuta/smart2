@@ -141,6 +141,11 @@ class TguiInteractiveInterface(TguiInterface):
                     else:
                         continue
                 else:
+                    if install_type==ACTION_REMOVE:
+                        transaction.setPolicy(PolicyRemove)
+                    elif install_type==ACTION_UPGRADE:
+                        transaction.setPolicy(PolicyUpgrade)
+
                     stage = STAGE_PACKAGE
 
 
