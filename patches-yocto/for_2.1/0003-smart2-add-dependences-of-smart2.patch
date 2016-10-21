@@ -1,6 +1,6 @@
-From 0b304585a2719d5a78c2b6d0f051a81cac8c514e Mon Sep 17 00:00:00 2001
+From 04da250c836b38af9950cadd497f0733cb7ebeab Mon Sep 17 00:00:00 2001
 From: Lei Maohui <leimaohui@cn.fujitsu.com>
-Date: Tue, 31 May 2016 14:24:09 +0900
+Date: Mon, 12 Sep 2016 17:51:39 +0900
 Subject: [PATCH 3/3] smart2:add dependences of smart2
 
 Signed-off-by: Lei Maohui <leimaohui@cn.fujitsu.com>
@@ -24,14 +24,14 @@ index 0c6a530..0f25d00 100644
  
  RDEPENDS_${PN}_darwin = "\
 diff --git a/meta/recipes-extended/newt/libnewt-python_0.52.18.bb b/meta/recipes-extended/newt/libnewt-python_0.52.18.bb
-index ba04757..028c987 100644
+index ba04757..ce3ef1a 100644
 --- a/meta/recipes-extended/newt/libnewt-python_0.52.18.bb
 +++ b/meta/recipes-extended/newt/libnewt-python_0.52.18.bb
 @@ -3,6 +3,7 @@ require recipes-extended/newt/libnewt_${PV}.bb
  SUMMARY .= " - python"
  DEPENDS = "libnewt python"
  RDEPENDS_${PN} += "python-core"
-+DEPENDS_class-nativesdk = "libnewt-nativesdk"
++DEPENDS_class-nativesdk = "python-nativesdk libnewt-nativesdk"
  
  inherit pythonnative python-dir
  
