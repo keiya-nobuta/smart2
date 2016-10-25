@@ -21,7 +21,7 @@ Confirm_type_list = [("Exit","\n Do you really terminate it?\n\n"), \
                      ("Confirm get SPDX","\n Begin getting SPDX archive?\n\n") \
                      ]
 Attention_type_list=[("Attention!","\n You must installed some packages first!\n\n"), \
-                     ("Attention!","Have some upper version packages.\nShow installed only!\n\
+                     ("Attention!","Have some advanced version packages.\nShow installed only!\n\
 You can enter 'upgrade' scene to upgrade \ninstalled packages.\n") \
                      ]
 
