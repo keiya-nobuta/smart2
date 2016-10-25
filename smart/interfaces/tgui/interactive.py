@@ -32,7 +32,8 @@ CONFIRM_UPGRADE    = 4
 CONFIRM_GET_SOURCE = 5
 CONFIRM_GET_SPDX   = 6
 
-ATTENTON_NONE      = 0
+ATTENTON_NONE           = 0
+ATTENTON_HAVE_UPGRADE   = 1
 
 class TguiInteractiveInterface(TguiInterface):
     
@@ -280,6 +281,23 @@ class TguiInteractiveInterface(TguiInterface):
             StopHotkeyScreen(screen)
             screen = None
 
+    def _DeleteUpgrade(self,packages=None,display_pkgs=[]):
+        haveUpgrade=False
+        for i, pkg in enumerate(display_pkgs[:-1]):
+            for pkg_oth in display_pkgs[i+1:]:
+                if pkg.name==pkg_oth.name:
+                    haveUpgrade=True
+                    break
+            if haveUpgrade :
+                break
+        ctn=0
+        if(haveUpgrade):
+            for pkg in packages:
+                if  (not pkg.installed) and (pkg in display_pkgs):
+                    ctn+=1
+                    display_pkgs.remove(pkg)
+        return haveUpgrade
+
     def PKGINSTWindowCtrl(self, screen, install_type, pkgTypeList, no_gpl3, packages=None, selected_pkgs=[]):
         STAGE_SELECT = 1
         STAGE_PKG_TYPE = 2
@@ -381,14 +399,15 @@ class TguiInteractiveInterface(TguiInterface):
             else:
                 display_pkgs = []
 
-            #if install_type == INSTALL_ALL:
-            #    selected_pkgs = copy.copy(display_pkgs)
             if (install_type==ACTION_REMOVE) or (install_type==ACTION_UPGRADE) or (install_type==ACTION_GET_SOURCE) \
                                                                                or (install_type==ACTION_GET_SPDX) :
                 for pkg in packages:
                     if not pkg.installed:
                         if pkg in display_pkgs:
                             display_pkgs.remove(pkg)
+            elif install_type==ACTION_INSTALL:
+                if(self._DeleteUpgrade(packages,display_pkgs)):
+                    hkey = HotkeyAttentionWindow(screen, ATTENTON_HAVE_UPGRADE)
 
             if len(display_pkgs) == 0:
                 if not no_gpl3:
@@ -428,6 +447,10 @@ class TguiInteractiveInterface(TguiInterface):
                     elif pkg.name.endswith('-ptest'):
                         display_pkgs.remove(pkg)
                         pkgs_spec.append(pkg)
+
+                if(self._DeleteUpgrade(packages,display_pkgs)):
+                    hkey = HotkeyAttentionWindow(screen, ATTENTON_HAVE_UPGRADE)
+
             else:
                 for pkg in packages:
                     if not pkg.installed:
@@ -441,6 +464,7 @@ class TguiInteractiveInterface(TguiInterface):
             else:
                 hkey = HotkeyAttentionWindow(screen, ATTENTON_NONE)
                 return ("b", selected_pkgs, packages)
+
         while True:
             if stage == STAGE_SELECT:
                 if search == None:
@@ -533,7 +557,6 @@ class TguiInteractiveInterface(TguiInterface):
         gplv3_pkgs = []
         report = Report(changeset)
         report.compute()
-
         pkgs = report.installing.keys()
         for pkg in pkgs:
             for loader in pkg.loaders:
