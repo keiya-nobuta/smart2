@@ -14,8 +14,8 @@ _TXT_ROOT_TITLE = "Package Installer"
 Install_actions = [("Install", "Choose it to install packages."), \
                    ("Remove", "Choose it to remove packages"), \
                    ("Upgrade", "Choose it to upgrade packages"), \
-                   ("Get source archive", "Choose it to create source archive"), \
-                   ("Get spdx archive", "Choose it to get SPDX archive") \
+                   ("Create source archive", "Choose it to create source archive"), \
+                   ("Create spdx archive", "Choose it to Create SPDX archive") \
                   ]
 
 ACTION_INSTALL     = 0
