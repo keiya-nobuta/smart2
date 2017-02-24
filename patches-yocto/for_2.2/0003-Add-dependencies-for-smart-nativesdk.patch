@@ -1,0 +1,97 @@
+From bcc6d0c34c277edc715923402b46ea63663e056e Mon Sep 17 00:00:00 2001
+From: Huang Qiyu <huangqy.fnst@cn.fujitsu.com>
+Date: Fri, 24 Feb 2017 23:45:51 +0900
+Subject: [PATCH 3/3] Add dependencies for smart-nativesdk
+
+Signed-off-by: Huang Qiyu <huangqy.fnst@cn.fujitsu.com>
+---
+ .../nativesdk-packagegroup-sdk-host.bb             |  3 +++
+ .../newt/libnewt-python2-nativesdk_0.52.19.bb      | 27 ++++++++++++++++++++++
+ meta/recipes-extended/newt/libnewt_0.52.19.bb      |  7 ++++--
+ meta/recipes-extended/slang/slang_2.3.0.bb         |  2 +-
+ 4 files changed, 36 insertions(+), 3 deletions(-)
+ create mode 100644 meta/recipes-extended/newt/libnewt-python2-nativesdk_0.52.19.bb
+
+diff --git a/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb b/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb
+index 2c2abed..6c72455 100644
+--- a/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb
++++ b/meta/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bb
+@@ -23,7 +23,10 @@ RDEPENDS_${PN} = "\
+     nativesdk-shadow \
+     nativesdk-makedevs \
+     nativesdk-smartpm \
++    nativesdk-createrepo \
+     nativesdk-postinst-intercept \
++    nativesdk-libnewt-python2 \
++    nativesdk-libnewt \
+     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'nativesdk-wayland', '', d)} \
+     "
+ 
+diff --git a/meta/recipes-extended/newt/libnewt-python2-nativesdk_0.52.19.bb b/meta/recipes-extended/newt/libnewt-python2-nativesdk_0.52.19.bb
+new file mode 100644
+index 0000000..436bf97
+--- /dev/null
++++ b/meta/recipes-extended/newt/libnewt-python2-nativesdk_0.52.19.bb
+@@ -0,0 +1,27 @@
++require recipes-extended/newt/libnewt_${PV}.bb
++
++SUMMARY .= " - python"
++DEPENDS = "libnewt python"
++RDEPENDS_${PN} += "python-core"
++
++inherit nativesdk pythonnative python-dir
++
++EXTRA_OECONF += "--with-python"
++EXTRA_OEMAKE += "PYTHONVERS=${PYTHON_DIR}"
++
++
++do_compile () {
++	VERSION="$(sed -n 's/^VERSION = //p' Makefile)"
++	oe_runmake _snack.so
++}
++
++do_install () {
++	install -d ${D}${PYTHON_SITEPACKAGES_DIR}
++	install -m 0755 ${PYTHON_DIR}/_snack.so ${D}${PYTHON_SITEPACKAGES_DIR}/
++	install -m 0644 snack.py ${D}${PYTHON_SITEPACKAGES_DIR}/
++}
++
++PACKAGES_remove = "whiptail"
++
++FILES_${PN} = "${PYTHON_SITEPACKAGES_DIR}/*"
++
+diff --git a/meta/recipes-extended/newt/libnewt_0.52.19.bb b/meta/recipes-extended/newt/libnewt_0.52.19.bb
+index a26ce1f..b4aa6f9 100644
+--- a/meta/recipes-extended/newt/libnewt_0.52.19.bb
++++ b/meta/recipes-extended/newt/libnewt_0.52.19.bb
+@@ -15,7 +15,10 @@ LICENSE = "LGPLv2"
+ LIC_FILES_CHKSUM = "file://COPYING;md5=5f30f0716dfdd0d91eb439ebec522ec2"
+ 
+ # slang needs to be >= 2.2
+-DEPENDS = "slang popt"
++DEPENDS = ""
++DEPENDS_class-target = "slang popt"
++DEPENDS_class-native = "slang-native popt-native"
++DEPENDS_class-nativesdk = "slang-nativesdk popt-nativesdk"
+ 
+ SRC_URI = "https://fedorahosted.org/releases/n/e/newt/newt-${PV}.tar.gz \
+            file://fix_SHAREDDIR.patch \
+@@ -51,4 +54,4 @@ do_compile_prepend() {
+ 
+ FILES_whiptail = "${bindir}/whiptail"
+ 
+-BBCLASSEXTEND = "native"
++BBCLASSEXTEND = "native nativesdk"
+diff --git a/meta/recipes-extended/slang/slang_2.3.0.bb b/meta/recipes-extended/slang/slang_2.3.0.bb
+index 17efbbe..47d38ed 100644
+--- a/meta/recipes-extended/slang/slang_2.3.0.bb
++++ b/meta/recipes-extended/slang/slang_2.3.0.bb
+@@ -48,4 +48,4 @@ FILES_${PN} += "${libdir}/${BPN}/v2/modules/ ${datadir}/slsh/"
+ 
+ PARALLEL_MAKE = ""
+ 
+-BBCLASSEXTEND = "native"
++BBCLASSEXTEND = "native nativesdk"
+-- 
+2.7.4
+
