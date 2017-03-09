@@ -384,6 +384,7 @@ class TguiInteractiveInterface(TguiInterface):
                 if not search == None:
                     def __search_pkgs(keyword, pkgs):
                         searched_pgks = []
+                        keyword = re.escape(keyword)
                         for pkg in pkgs:
                             if re.compile(keyword, re.IGNORECASE).search(pkg.name):
                                 searched_pgks.append(pkg)
