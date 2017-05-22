@@ -41,6 +41,7 @@ USAGE=_("smart command [options] [arguments]")
 DESCRIPTION=_("""
 Action commands:
     update
+    init
     install
     reinstall
     upgrade

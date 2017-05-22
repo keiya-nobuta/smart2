@@ -6,21 +6,34 @@ from smart import *
 from smart.interfaces.tgui.interface import TguiInterface
 from smart.transaction import *
 from smart.report import Report
-import sys, os, copy, textwrap, snack, string, time, re
+import sys, os, copy, textwrap, snack, string, time, re, shutil
 from snack import *
 
 _TXT_ROOT_TITLE = "Package Installer"
-Install_types = [("Install All", "If you choose it, all packages are selected."), \
-                ("Busybox base", "Busybox base sample."), \
-                ("Customize", "Default, no packages are selected, your can choose packages that you want.")]
 
-INSTALL_ALL = 0
-INSTALL_BUSYBOX = 1
-INSTALL_CUSTOMIZE = 2
+Install_actions = [("Install", "Choose it to install packages."), \
+                   ("Remove", "Choose it to remove packages"), \
+                   ("Upgrade", "Choose it to upgrade packages"), \
+                   ("Create source archive", "Choose it to create source archive"), \
+                   ("Create spdx archive", "Choose it to Create SPDX archive") \
+                  ]
 
-CONFIRM_EXIT = 0
-CONFIRM_INSTALL = 1
-CONFIRM_LICENSE = 2
+ACTION_INSTALL     = 0
+ACTION_REMOVE      = 1
+ACTION_UPGRADE     = 2
+ACTION_GET_SOURCE  = 3
+ACTION_GET_SPDX    = 4
+
+CONFIRM_EXIT       = 0
+CONFIRM_INSTALL    = 1
+CONFIRM_LICENSE    = 2
+CONFIRM_REMOVE     = 3
+CONFIRM_UPGRADE    = 4
+CONFIRM_GET_SOURCE = 5
+CONFIRM_GET_SPDX   = 6
+
+ATTENTON_NONE           = 0
+ATTENTON_HAVE_UPGRADE   = 1
 
 class TguiInteractiveInterface(TguiInterface):
     
@@ -40,6 +53,7 @@ class TguiInteractiveInterface(TguiInterface):
         STAGE_CUST_LIC     = 3
         STAGE_PACKAGE      = 4
         STAGE_PACKAGE_SPEC = 5
+        STAGE_PROCESS      = 6
         
         screen = None
         no_gpl3 = False
@@ -55,7 +69,7 @@ class TguiInteractiveInterface(TguiInterface):
         if screen == None:
             sys.exit(1)
 
-        install_type = INSTALL_ALL
+        install_type   = ACTION_INSTALL
         stage = STAGE_INSTALL_TYPE
  
         def __init_pkg_type():
@@ -74,39 +88,109 @@ class TguiInteractiveInterface(TguiInterface):
             pkgType_ptest = pkgType("ptest", False, "If select, you can see/select *-ptest packages in the next step.")
             pkgTypeList.append(pkgType_ptest)
 
-            
             return pkgTypeList
 
         pkgTypeList = __init_pkg_type()
         selected_pkgs = []
         selected_pkgs_spec = []
         pkgs_spec = []
+        src_path=""
+        output_path=""
+
         while True:
             #==============================
             # select install type
             #==============================
             if stage == STAGE_INSTALL_TYPE:
-                install_type = PKGINSTTypeWindowCtrl(screen, Install_types, install_type)
-                stage = STAGE_PACKAGE
+
+                install_type  = PKGINSTActionWindowCtrl(screen, Install_actions, install_type)
+
+                if install_type==ACTION_GET_SOURCE:
+                    src_path=PKGINSTPathInputWindow(screen, \
+                                                    True, \
+                                                    "  Input Path  ", \
+                                                    "Specify the path where the source archives you want to download:")
+                    if not src_path == None:
+                        output_path = PKGINSTPathInputWindow(screen, \
+                                                             False, \
+                                                             "  Input Path  ", \
+                                                             "  Specify the output path:                                 ", \
+                                                             "./source")
+                        if not output_path == None:
+                            stage = STAGE_PACKAGE
+                        else:
+                            continue
+                    else:
+                        continue
+
+
+                elif install_type== ACTION_GET_SPDX:
+                    src_path=PKGINSTPathInputWindow(screen, \
+                                                    True, \
+                                                    "  Input Path  ", \
+                                                    "Specify the path where the SPDX files you want to download:")
+                    if not src_path == None:
+                        output_path = PKGINSTPathInputWindow(screen, \
+                                                             False, \
+                                                             "  Input Path  ", \
+                                                             "  Specify the output path:                                 ", \
+                                                             "./spdx")
+                        if not output_path == None:
+                            stage = STAGE_PACKAGE
+                        else:
+                            continue
+                    else:
+                        continue
+                else:
+                    if install_type==ACTION_REMOVE:
+                        transaction.setPolicy(PolicyRemove)
+                    elif install_type==ACTION_UPGRADE:
+                        transaction.setPolicy(PolicyUpgrade)
+
+                    stage = STAGE_PACKAGE
+
+
                 selected_pkgs = []
                 selected_pkgs_spec = []
                 pkgs_spec = []
-            #if install_type != INSTALL_BUSYBOX:
-                result = HotkeyExitWindow(screen, confirm_type=CONFIRM_LICENSE)
-                if result == "y":
-                    no_gpl3 = False
+
+                if install_type == ACTION_INSTALL:
+                    result = HotkeyExitWindow(screen, confirm_type=CONFIRM_LICENSE)
+                    if result == "y":
+                        no_gpl3 = False
+                    else:
+                        no_gpl3 = True
                 else:
-                    no_gpl3 = True
+                    no_gpl3 = False
+
+
+
             #==============================
             # select package
             #==============================
             elif stage == STAGE_PACKAGE:
-                (result, selected_pkgs, pkgs_spec) = self.PKGINSTWindowCtrl(screen, install_type, None, no_gpl3, None, selected_pkgs)
+                (result, selected_pkgs, pkgs_spec) = self.PKGINSTWindowCtrl(screen, install_type, None, no_gpl3, \
+                                                                            None, selected_pkgs)
                 if result == "b":
                     # back
                     stage = STAGE_INSTALL_TYPE
+
                 elif result == "n":
-                    stage = STAGE_PKG_TYPE
+                    if install_type == ACTION_INSTALL:
+                        stage = STAGE_PKG_TYPE
+                    else:
+                        #confirm if or not continue process function
+                        if   install_type == ACTION_REMOVE     : confirm_type = CONFIRM_REMOVE
+                        elif install_type == ACTION_UPGRADE    : confirm_type = CONFIRM_UPGRADE
+                        elif install_type == ACTION_GET_SOURCE : confirm_type = CONFIRM_GET_SOURCE
+                        elif install_type == ACTION_GET_SPDX   : confirm_type = CONFIRM_GET_SPDX
+
+                        hkey = HotkeyExitWindow(screen, confirm_type)
+                        if hkey == "y":
+                            stage = STAGE_PROCESS
+                        elif hkey == "n":
+                            stage = STAGE_PACKAGE
+
             #==============================
             # select package type
             #==============================
@@ -121,25 +205,59 @@ class TguiInteractiveInterface(TguiInterface):
             # select special packages(local, dev, dbg, doc) 
             #==============================
             elif stage == STAGE_PACKAGE_SPEC:
-                (result, selected_pkgs_spec, pkgs_temp) = self.PKGINSTWindowCtrl(screen, install_type, pkgTypeList, no_gpl3, pkgs_spec, selected_pkgs_spec)
+                (result, selected_pkgs_spec, pkgs_temp) = self.PKGINSTWindowCtrl(screen, install_type, pkgTypeList, \
+                                                                            no_gpl3, pkgs_spec, selected_pkgs_spec)
                 if result == "b":
                     # back
                     stage = STAGE_PKG_TYPE
                 elif result == "k":
-                     stage = STAGE_PKG_TYPE
+                    stage = STAGE_PKG_TYPE
                 elif result == "n":
-                    for pkg in selected_pkgs:
-                        transaction.enqueue(pkg, INSTALL)
-                    for pkg in selected_pkgs_spec:
-                        transaction.enqueue(pkg, INSTALL)
+                    stage = STAGE_PROCESS
+
+            # ==============================
+            # Process function
+            # ==============================
+            elif stage == STAGE_PROCESS:
+
+                if install_type==ACTION_GET_SOURCE or install_type==ACTION_GET_SPDX:
+
+                    if screen != None:
+                        StopHotkeyScreen(screen)
+                        screen = None
+
+                    if install_type==ACTION_GET_SOURCE:
+                        self.installSrc(selected_pkgs, src_path, output_path)
+                    elif install_type==ACTION_GET_SPDX:
+                        self.installSPDX(selected_pkgs, src_path, output_path)
+
+                    break
+
+                else:
+                    for pkg in selected_pkgs:           #selected_pkgs
+                        if install_type==ACTION_INSTALL:
+                            transaction.enqueue(pkg, INSTALL)
+                        elif install_type==ACTION_REMOVE:
+                            transaction.enqueue(pkg, REMOVE)
+                        elif install_type==ACTION_UPGRADE:
+                            transaction.enqueue(pkg, UPGRADE)
+                    if install_type == ACTION_INSTALL:  #selected_pkgs_spec
+                        for pkg in selected_pkgs_spec:
+                            transaction.enqueue(pkg, INSTALL)
+
                     transaction.run()
+
                     if no_gpl3:
                         oldchangeset = self._changeset
-                        newchangeset = transaction.getChangeSet() 
+                        newchangeset = transaction.getChangeSet()
                         result = self.confirmChange(screen, oldchangeset, newchangeset)
                         #continue to install
                         if result == "y":
-                            hkey = HotkeyExitWindow(screen, confirm_type=CONFIRM_INSTALL)
+                            if install_type   == ACTION_INSTALL:
+                                confirm_type = CONFIRM_INSTALL
+
+                            hkey = HotkeyExitWindow(screen, confirm_type)
+
                             if hkey == "y":
                                 if screen != None:
                                     StopHotkeyScreen(screen)
@@ -162,6 +280,23 @@ class TguiInteractiveInterface(TguiInterface):
         if screen != None:
             StopHotkeyScreen(screen)
             screen = None
+
+    def _DeleteUpgrade(self,packages=None,display_pkgs=[]):
+        haveUpgrade=False
+        for i, pkg in enumerate(display_pkgs[:-1]):
+            for pkg_oth in display_pkgs[i+1:]:
+                if pkg.name==pkg_oth.name:
+                    haveUpgrade=True
+                    break
+            if haveUpgrade :
+                break
+        ctn=0
+        if(haveUpgrade):
+            for pkg in packages:
+                if  (not pkg.installed) and (pkg in display_pkgs):
+                    ctn+=1
+                    display_pkgs.remove(pkg)
+        return haveUpgrade
 
     def PKGINSTWindowCtrl(self, screen, install_type, pkgTypeList, no_gpl3, packages=None, selected_pkgs=[]):
         STAGE_SELECT = 1
@@ -264,20 +399,33 @@ class TguiInteractiveInterface(TguiInterface):
             else:
                 display_pkgs = []
 
-            if install_type == INSTALL_ALL:
-                selected_pkgs = copy.copy(display_pkgs)
+            if (install_type==ACTION_REMOVE) or (install_type==ACTION_UPGRADE) or (install_type==ACTION_GET_SOURCE) \
+                                                                               or (install_type==ACTION_GET_SPDX) :
+                for pkg in packages:
+                    if not pkg.installed:
+                        if pkg in display_pkgs:
+                            display_pkgs.remove(pkg)
+            elif install_type==ACTION_INSTALL:
+                if(self._DeleteUpgrade(packages,display_pkgs)):
+                    hkey = HotkeyAttentionWindow(screen, ATTENTON_HAVE_UPGRADE)
 
             if len(display_pkgs) == 0:
                 if not no_gpl3:
-                    hkey = HotkeyExitWindow(screen, confirm_type=CONFIRM_INSTALL)
-                    if hkey == "y":
-                        return ("n", selected_pkgs, packages)
-                    elif hkey == "n":
-                        return ("k", selected_pkgs, packages)
+                    if install_type == ACTION_INSTALL     :
+                        confirm_type = CONFIRM_INSTALL
+                        hkey = HotkeyExitWindow(screen, confirm_type)
+                        if hkey == "y":
+                            return ("n", selected_pkgs, packages)
+                        elif hkey == "n":
+                            return ("k", selected_pkgs, packages)
+                    else:
+                        hkey=HotkeyAttentionWindow(screen,ATTENTON_NONE)
+                        return ("b", selected_pkgs, packages)
                 else:
                     return ("n", selected_pkgs, packages)
         else:
-            for pkg in packages:
+            if install_type == ACTION_INSTALL :
+                for pkg in packages:
                     if "-locale-" in pkg.name:
                         display_pkgs.remove(pkg)
                         pkgs_spec.append(pkg)
@@ -299,19 +447,24 @@ class TguiInteractiveInterface(TguiInterface):
                     elif pkg.name.endswith('-ptest'):
                         display_pkgs.remove(pkg)
                         pkgs_spec.append(pkg)
-            if install_type == INSTALL_ALL:
-                selected_pkgs = copy.copy(display_pkgs)
-            elif install_type == INSTALL_BUSYBOX:
-                selected_pkgs = [] 
-                first_busybox_position = 0
-                for pkg in display_pkgs:
-                    if pkg.name.startswith('busybox'): 
-                        selected_pkgs.append(pkg)
-                        if first_busybox_position == 0:
-                            first_busybox_position = position
-                    position += 1
-                position = first_busybox_position
-        
+
+                if(self._DeleteUpgrade(packages,display_pkgs)):
+                    hkey = HotkeyAttentionWindow(screen, ATTENTON_HAVE_UPGRADE)
+
+            else:
+                for pkg in packages:
+                    if not pkg.installed:
+                        if pkg in display_pkgs:
+                            display_pkgs.remove(pkg)
+
+
+        if len(display_pkgs)==0:
+            if install_type==ACTION_INSTALL:
+                stage = STAGE_NEXT
+            else:
+                hkey = HotkeyAttentionWindow(screen, ATTENTON_NONE)
+                return ("b", selected_pkgs, packages)
+
         while True:
             if stage == STAGE_SELECT:
                 if search == None:
@@ -321,7 +474,8 @@ class TguiInteractiveInterface(TguiInterface):
                                                             position, \
                                                             iTargetSize, \
                                                             iHostSize, \
-                                                            search)
+                                                            search, \
+                                                            install_type)
                 else:
                     (hkey, search_position, pkglist) = PKGINSTPackageWindow(screen, \
                                                              searched_ret, \
@@ -329,7 +483,8 @@ class TguiInteractiveInterface(TguiInterface):
                                                              search_position, \
                                                              iTargetSize, \
                                                              iHostSize, \
-                                                             search)
+                                                             search, \
+                                                             install_type)
 
                 if hkey == "n":
                     stage = STAGE_NEXT
@@ -349,7 +504,9 @@ class TguiInteractiveInterface(TguiInterface):
                 #if in special type packages(dev,doc,locale) select Interface:
                 else:
                     if not no_gpl3:
-                        hkey = HotkeyExitWindow(screen, confirm_type=CONFIRM_INSTALL)
+                        if install_type == ACTION_INSTALL : confirm_type = CONFIRM_INSTALL
+
+                        hkey = HotkeyExitWindow(screen, confirm_type)
                         if hkey == "y":
                             return ("n", selected_pkgs, packages)
                         elif hkey == "n":
@@ -401,7 +558,6 @@ class TguiInteractiveInterface(TguiInterface):
         gplv3_pkgs = []
         report = Report(changeset)
         report.compute()
-
         pkgs = report.installing.keys()
         for pkg in pkgs:
             for loader in pkg.loaders:
@@ -419,3 +575,133 @@ class TguiInteractiveInterface(TguiInterface):
                 return "n"
         else:
             return "y"
+
+    def installSrc(self, selected_pkgs , src_dir, output_dir):
+
+        sys.stdout.write("Preparing...\n")
+        ctn=0
+        ctnget=0
+        numpkg=len(selected_pkgs)
+
+        for pkg in selected_pkgs:
+
+            ctn += 1
+
+            for loader in pkg.loaders:
+
+                info = loader.getInfo(pkg)
+                src = info.getSource()
+                lic = info.getLicense()
+                srcdir = src_dir
+
+                if srcdir:
+
+                    srcpath = srcdir + "/" + src + ".src.rpm"
+                    srcdpath = output_dir
+                    if not os.path.exists(srcdpath):
+                        os.mkdir(srcdpath)
+                    srcdpath = srcdpath + "/" + lic
+                    if not os.path.exists(srcdpath):
+                        os.mkdir(srcdpath)
+
+                    srcdpath = srcdpath + '/' + src + ".src.rpm"
+                    if srcdir.startswith("/"):
+
+                        ctnget += 1
+                        str = "[" + ("%d" % int(ctn * 100 / numpkg)).rjust(3) + "%]" + ("%d" % ctnget).rjust(4) + \
+                              ": Getting: " + src + ".src.rpm"
+                        if len(str) > 43:
+                            str = str[:40] + "..."
+
+                        str=str.ljust(43)
+
+                        if os.path.exists(srcpath):
+
+                            if not os.path.exists(srcdpath):
+                                shutil.copyfile(srcpath, srcdpath)
+                                sys.stdout.write(str + "  OK\n")
+                                break
+                            else:
+                                sys.stdout.write(str + "  Exists\n")
+                                break
+                        else:
+                            sys.stdout.write(str + "  No source rpm\n")
+                            sys.stderr.write("Source rpm: " + srcpath + " does not exists....\n")
+                            break
+                    elif srcdir.startswith("http"):
+                        if not os.path.exists(srcdpath):
+                            command = "wget -q --no-proxy " + srcpath
+                            rec = subprocess.call(command, shell=True)
+                            if (rec != 0):
+                                sys.stderr.write("Source rpm: " + src + ".src.rpm fetch failed!\n")
+                            if (rec == 0):
+                                src = src + ".src.rpm"
+                                shutil.move(src, srcdpath)
+                    elif srcdir.startswith("ftp"):
+                        if not os.path.exists(srcdpath):
+                            command = "wget -q --no-proxy " + srcpath
+                            rec = subprocess.call(command, shell=True)
+                            if (rec != 0):
+                                sys.stderr.write("Source rpm: " + src + ".src.rpm fetch failed!\n")
+                            if (rec == 0):
+                                src = src + ".src.rpm"
+                                shutil.move(src, srcdpath)
+                    else:
+                        sys.stderr.write("Src directory is invalid!\n")
+                else:
+                    break
+
+    def installSPDX(self, selected_pkgs, src_dir, output_dir):
+
+        sys.stdout.write("Preparing...\n")
+        ctn = 0
+        ctnget = 0
+        numpkg = len(selected_pkgs)
+
+        for pkg in selected_pkgs:
+
+            ctn += 1
+
+            for loader in pkg.loaders:
+
+                info = loader.getInfo(pkg)
+                src = info.getSource()
+                src = "-".join(src.split("-")[:-1])
+
+                lic = info.getLicense()
+                srcdir = src_dir
+
+                if srcdir:
+                    srcpath = srcdir + "/" + src + ".spdx"
+                    srcdpath = output_dir
+                    if not os.path.exists(srcdpath):
+                        os.mkdir(srcdpath)
+                    srcdpath = srcdpath + "/" + lic
+                    if not os.path.exists(srcdpath):
+                        os.mkdir(srcdpath)
+
+                    srcdpath = srcdpath + '/' + src + ".spdx"
+
+                    ctnget += 1
+                    str = "[" + ("%d" % int(ctn * 100 / numpkg)).rjust(3) + "%]" + ("%d" % ctnget).rjust(4) + \
+                          ": Getting: " + src + ".spdx"
+                    if len(str) > 43:
+                        str = str[:40] + "..."
+
+                    str=str.ljust(43)
+
+                    if srcdir.startswith("/"):
+                        if os.path.exists(srcpath):
+                            if not os.path.exists(srcdpath):
+                                shutil.copyfile(srcpath, srcdpath)
+                                sys.stdout.write(str + "  OK\n")
+                                break
+                            else:
+                                sys.stdout.write(str + "  Exists\n")
+                                break
+                        else:
+                            sys.stdout.write(str + "  No SPDX file\n")
+                            sys.stderr.write("Source SPDX file: " + srcpath + " does not exist....\n")
+                            break
+                else:
+                    break

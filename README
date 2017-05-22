@@ -1,17 +1,17 @@
 1. Overview
 
-    Smart2 is a package manager that based on smart. Smart2 support all the 
+    Smart2 is a package manager that based on smart. Smart2 supports all the 
     funtions of smart. In addition, smart2 has some new features.
   
     --------------
     New Features
     --------------
 
-    - A new interface named "tgui" can show you a gui on your character terminal.
-    - Supports customizing your target rootfs on host development machine.
+    - A new interface named "tgui" can show you a GUI on your character terminal.
+    - Support for custom target rootfs on host development machine.
    
     Note
-      More informations about smart, please reference to doc/ or http://labix.org/smart/howto.
+      More information about smart, refer to doc/ or http://labix.org/smart/howto.
    
 2. How to get smart2
   
@@ -24,7 +24,7 @@
 
       1) The dependencies are same as smart
          Smart2 is based on smart, so please make sure the prerequisites for smart have been installed.
-         Please refrence to http://labix.org/smart/howto to obtain details.
+         Refre to http://labix.org/smart/howto to obtain details.
 
       2) Dependencies for smart2 new features.
          - python-newt:  the snack module depended by "tgui" graphic interface.
@@ -38,7 +38,7 @@
 
     3.2 Installation
 
-      Cd into smart2 directory and execute the following commands as root:
+      cd into smart2 directory and execute the following commands as root:
       -------------------------------------------------------------------
        # python setup.py build
        # python setup.py install
@@ -50,7 +50,7 @@
       -------------------------------------------------------------------
 
       Note
-        After install you have to change the interpreter from "#!/usr/bin/python" to 
+        After installation, you have to change the interpreter from "#!/usr/bin/python" to 
         "#!/usr/bin/env python" in your smart2 command.
         -----------------------------------------------------------------
          $ whereis smart
@@ -60,28 +60,28 @@
            ......
         -----------------------------------------------------------------
 
-    3.3 Global Setting
+    3.3 Global Settings
 
       1) In Cross-Platform case, make sure the required commands can be invoked preferentially.
          For example, you can do it by the following command for Yocto-User
          -----------------------------------------------------------------------
-          # source TOOLCHAIN/environment-setup-i586-poky-linux
+          $ source TOOLCHAIN/environment-setup-i586-poky-linux
          -----------------------------------------------------------------------
 
       2) Make sure the following environment variable point to correct path.
          -----------------------------------------------------------------------
-          # export RPM_USRLIBRPM=/usr/lib/rpm
-          # export RPM_ETCRPM=/etc/rpm
-          # export RPM_LOCALEDIR=/usr/share/locale
+          $ export RPM_USRLIBRPM=/usr/lib/rpm
+          $ export RPM_ETCRPM=/etc/rpm
+          $ export RPM_LOCALEDIR=/usr/share/locale
          -----------------------------------------------------------------------
 
         Note
           In Cross-Platform case, maybe you should customize these variable.
           E.g. for Yocto user, you should set them as following.
           -------------------------------------------------------------------
-           # export RPM_USRLIBRPM=${OECORE_NATIVE_SYSROOT}/usr/lib/rpm
-           # export RPM_ETCRPM=${SDKTARGETSYSROOT}/etc/rpm
-           # export RPM_LOCALEDIR=${OECORE_NATIVE_SYSROOT}/usr/share/locale
+           $ export RPM_USRLIBRPM=${OECORE_NATIVE_SYSROOT}/usr/lib/rpm
+           $ export RPM_ETCRPM=${SDKTARGETSYSROOT}/etc/rpm
+           $ export RPM_LOCALEDIR=${OECORE_NATIVE_SYSROOT}/usr/share/locale
           -------------------------------------------------------------------
 
 4. How to manage packages
