@@ -365,7 +365,7 @@ class TguiInteractiveInterface(TguiInterface):
             elif stage == STAGE_INFO:
                 ctrl = self._ctrl
                 if not search == None:
-                    PKGINSTPackageInfoWindow(screen, ctrl, searched_ret[position])
+                    PKGINSTPackageInfoWindow(screen, ctrl, searched_ret[search_position])
                 else:
                     PKGINSTPackageInfoWindow(screen, ctrl, display_pkgs[position])
                 stage = STAGE_SELECT
@@ -384,6 +384,7 @@ class TguiInteractiveInterface(TguiInterface):
                 if not search == None:
                     def __search_pkgs(keyword, pkgs):
                         searched_pgks = []
+                        keyword = re.escape(keyword)
                         for pkg in pkgs:
                             if re.compile(keyword, re.IGNORECASE).search(pkg.name):
                                 searched_pgks.append(pkg)
