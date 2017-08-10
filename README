@@ -115,6 +115,12 @@
          Note
            Smart2 manage packages by repodata, make sure there is repodata in every sources
            directory under PACKAGES_DIR.
+           If the rpm package is added, deleted or updated, the repodata needs to be updated to
+           reflect the newest infomation.
+           -------------------------------------------------------------------
+           $ rm -rf repodata
+           $ createrepo ./
+           -------------------------------------------------------------------
            
       For example:
         If you build x86 by Yocto, there will be three packages sources for x86.
@@ -181,36 +187,34 @@
         
       3) customize packages
         
-        ------------------------------------- Select package -------------------------------------
-        |                                                                                        |
-        | [I] zip                                                                                |
-        | [*] zabbix                                                                             |
-        | [I] xz                                                                                 |
-        | [*] xwud                                                                               |
-        | [*] xwininfo                                                                           |
-        | [*] xwd                                                                                |
-        | [*] xvinfo                                                                             |
-        | [*] xterm                                                                              |
-        | [*] xstdcmap                                                                           |
-        | [*] xsetroot                                                                           |
-        | [*] xsetmode                                                                           |
-        | [*] xset                                                                               |
-        | [*] xserver-xorg-xwayland                                                              |
-        | [*] xserver-xorg-xvfb                                                                  |
-        | [I] xserver-xorg-utils                                                                 |
-        | [I] xserver-xorg-module-libwfb                                                         |
-        | [I] xserver-xorg-module-libint10                                                       |
-        | [*] xserver-xorg-module-exa                                                            |
-        | [*] xserver-xorg-extension-glx                                                         |
-        | [*] xserver-xorg                                                                       |
-        | [I] xserver-xf86-config                                                                |
-        | [*] xrestop                                                                            |
-        | [*] xrefresh                                                                           |
-        | -------------------------------------------------------------------------------------- |
-        | All Package [2609]    Installed Packages [1264] Selected Packages [2609]               |
-        | -------------------------------------------------------------------------------------- |
-        | SPACE/ENTER:select/unselect  R:seaRch N:Next  B:Back  I:Info  X:eXit                   |
-        ------------------------------------------------------------------------------------------
+　　　　　　  ┌───────────────────────────────────────────┤ Select package ├───────────────────────────────────────────┐
+  　　　　　　│                                                                                                        │
+  　　　　　　│ [ ] acl                                                                                                │
+  　　　　　　│ [ ] acpid                                                                                              │
+  　　　　　　│ [ ] adwaita-icon-theme                                                                               ▒ │
+  　　　　　　│ [ ] adwaita-icon-theme-cursors                                                                       ▒ │
+  　　　　　　│ [ ] adwaita-icon-theme-hires                                                                         ▒ │
+  　　　　　　│ [ ] adwaita-icon-theme-symbolic                                                                      ▒ │
+  　　　　　　│ [ ] alsa-conf                                                                                        ▒ │
+  　　　　　　│ [ ] alsa-conf-base                                                                                   ▒ │
+  　　　　　　│ [ ] alsa-lib                                                                                         ▒ │
+  　　　　　　│ [ ] alsa-plugins                                                                                     ▒ │
+  　　　　　　│ [ ] alsa-plugins-pulseaudio-conf                                                                     ▒ │
+  　　　　　　│ [ ] alsa-server                                                                                      ▒ │
+  　　　　　　│ [ ] alsa-state                                                                                       ▒ │
+  　　　　　　│ [ ] alsa-states                                                                                      ▒ │
+  　　　　　　│ [ ] alsa-utils                                                                                       ▒ │
+  　　　　　　│ [ ] alsa-utils-aconnect                                                                              ▒ │
+  　　　　　　│ [ ] alsa-utils-alsactl                                                                               ▒ │
+  　　　　　　│ [ ] alsa-utils-alsaloop                                                                              ▒ │
+  　　　　　　│ [ ] alsa-utils-alsamixer                                                                             ▒ │
+  　　　　　　│ [ ] alsa-utils-alsaucm                                                                               ▒ │
+  　　　　　　│ [ ] alsa-utils-amixer                                                                                  │
+  　　　　　　│ ------------------------------------------------------------------------------------------------------ │
+  　　　　　　│ All Packages [2505]    Installed Packages [0]    Selected Packages [0]                                 │
+  　　　　　　│ ------------------------------------------------------------------------------------------------------ │
+  　　　　　　│ SPACE/ENTER:select/unselect  A:select/unselect All  R:seaRch N:Next  B:Back  I:Info  X:eXit            │
+  　　　　　　└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
         Note
           -  [] Means the package has not been selected and installed. If you want to install it, you can 
