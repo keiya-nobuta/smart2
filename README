@@ -187,34 +187,34 @@
         
       3) customize packages
         
-　　　　　　  ┌───────────────────────────────────────────┤ Select package ├───────────────────────────────────────────┐
-  　　　　　　│                                                                                                        │
-  　　　　　　│ [ ] acl                                                                                                │
-  　　　　　　│ [ ] acpid                                                                                              │
-  　　　　　　│ [ ] adwaita-icon-theme                                                                               ▒ │
-  　　　　　　│ [ ] adwaita-icon-theme-cursors                                                                       ▒ │
-  　　　　　　│ [ ] adwaita-icon-theme-hires                                                                         ▒ │
-  　　　　　　│ [ ] adwaita-icon-theme-symbolic                                                                      ▒ │
-  　　　　　　│ [ ] alsa-conf                                                                                        ▒ │
-  　　　　　　│ [ ] alsa-conf-base                                                                                   ▒ │
-  　　　　　　│ [ ] alsa-lib                                                                                         ▒ │
-  　　　　　　│ [ ] alsa-plugins                                                                                     ▒ │
-  　　　　　　│ [ ] alsa-plugins-pulseaudio-conf                                                                     ▒ │
-  　　　　　　│ [ ] alsa-server                                                                                      ▒ │
-  　　　　　　│ [ ] alsa-state                                                                                       ▒ │
-  　　　　　　│ [ ] alsa-states                                                                                      ▒ │
-  　　　　　　│ [ ] alsa-utils                                                                                       ▒ │
-  　　　　　　│ [ ] alsa-utils-aconnect                                                                              ▒ │
-  　　　　　　│ [ ] alsa-utils-alsactl                                                                               ▒ │
-  　　　　　　│ [ ] alsa-utils-alsaloop                                                                              ▒ │
-  　　　　　　│ [ ] alsa-utils-alsamixer                                                                             ▒ │
-  　　　　　　│ [ ] alsa-utils-alsaucm                                                                               ▒ │
-  　　　　　　│ [ ] alsa-utils-amixer                                                                                  │
-  　　　　　　│ ------------------------------------------------------------------------------------------------------ │
-  　　　　　　│ All Packages [2505]    Installed Packages [0]    Selected Packages [0]                                 │
-  　　　　　　│ ------------------------------------------------------------------------------------------------------ │
-  　　　　　　│ SPACE/ENTER:select/unselect  A:select/unselect All  R:seaRch N:Next  B:Back  I:Info  X:eXit            │
-  　　　　　　└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+　       ┌───────────────────────────┤ Select package ├───────────────────────────────────┐
+         │                                                                                │
+  　　   │ [ ] acl                                                                        │
+         │ [ ] acpid                                                                      │
+         │ [ ] adwaita-icon-theme                                                         │
+         │ [ ] adwaita-icon-theme-cursors                                                 │
+         │ [ ] adwaita-icon-theme-hires                                                   │
+         │ [ ] adwaita-icon-theme-symbolic                                                │
+         │ [ ] alsa-conf                                                                  │
+         │ [ ] alsa-conf-base                                                             │
+         │ [ ] alsa-lib                                                                   │
+         │ [ ] alsa-plugins                                                               │
+         │ [ ] alsa-plugins-pulseaudio-conf                                               │
+  　     │ [ ] alsa-server                                                                │
+         │ [I] alsa-state                                                                 │
+         │ [ ] alsa-states                                                                │
+  　     │ [ ] alsa-utils                                                                 │
+         │ [ ] alsa-utils-aconnect                                                        │
+         │ [ ] alsa-utils-alsactl                                                         │
+         │ [ ] alsa-utils-alsaloop                                                        │
+         │ [ ] alsa-utils-alsamixer                                                       │
+         │ [I] alsa-utils-alsaucm                                                         │
+         │ [*] alsa-utils-amixer                                                          │
+         │ ------------------------------------------------------------------------------ │
+         │ All Packages [2503]    Installed Packages [2]    Selected Packages [1]         │
+         │ ------------------------------------------------------------------------------ │
+         │ SPACE/ENTER:select/unselect R:seaRch N:Next  B:Back  I:Info  X:eXit            │
+         └────────────────────────────────────────────────────────────────────────────────┘
 
         Note
           -  [] Means the package has not been selected and installed. If you want to install it, you can 
