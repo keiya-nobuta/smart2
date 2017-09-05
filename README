@@ -188,7 +188,7 @@
         
 　       ------------------------------- Select package -----------------------------------
          |                                                                                |
-  　　   | [ ] acl                                                                        |
+         | [ ] acl                                                                        |
          | [ ] acpid                                                                      |
          | [ ] adwaita-icon-theme                                                         |
          | [ ] adwaita-icon-theme-cursors                                                 |
@@ -199,10 +199,10 @@
          | [ ] alsa-lib                                                                   |
          | [ ] alsa-plugins                                                               |
          | [ ] alsa-plugins-pulseaudio-conf                                               |
-  　     | [ ] alsa-server                                                                |
+         | [ ] alsa-server                                                                |
          | [I] alsa-state                                                                 |
          | [ ] alsa-states                                                                |
-  　     | [ ] alsa-utils                                                                 |
+         | [ ] alsa-utils                                                                 |
          | [ ] alsa-utils-aconnect                                                        |
          | [ ] alsa-utils-alsactl                                                         |
          | [ ] alsa-utils-alsaloop                                                        |
