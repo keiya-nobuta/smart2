@@ -111,16 +111,6 @@
 
       2) PACKAGES_DIR: The packages sources directory. There can be multiple packages sources
                        in this directory.
-
-         Note
-           Smart2 manage packages by repodata, make sure there is repodata in every sources
-           directory under PACKAGES_DIR.
-           If the rpm package is added, deleted or updated, the repodata needs to be updated to
-           reflect the newest infomation.
-           -------------------------------------------------------------------
-           $ rm -rf repodata
-           $ createrepo ./
-           -------------------------------------------------------------------
            
       For example:
         If you build x86 by Yocto, there will be three packages sources for x86.
@@ -153,6 +143,15 @@
          $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
         -------------------------------------------------------------------
 
+         Note
+           Smart2 manage packages by repodata, make sure there is repodata in every sources
+           directory under PACKAGES_DIR.
+           If the rpm package is added, deleted or updated, the repodata needs to be updated to
+           reflect the newest infomation.
+           -------------------------------------------------------------------
+           $ rm -rf repodata
+           $ createrepo ./
+           -------------------------------------------------------------------
 
     4.2 Create rootfs for Target-Platform
         
@@ -187,34 +186,34 @@
         
       3) customize packages
         
-　       ┌───────────────────────────┤ Select package ├───────────────────────────────────┐
-         │                                                                                │
-  　　   │ [ ] acl                                                                        │
-         │ [ ] acpid                                                                      │
-         │ [ ] adwaita-icon-theme                                                         │
-         │ [ ] adwaita-icon-theme-cursors                                                 │
-         │ [ ] adwaita-icon-theme-hires                                                   │
-         │ [ ] adwaita-icon-theme-symbolic                                                │
-         │ [ ] alsa-conf                                                                  │
-         │ [ ] alsa-conf-base                                                             │
-         │ [ ] alsa-lib                                                                   │
-         │ [ ] alsa-plugins                                                               │
-         │ [ ] alsa-plugins-pulseaudio-conf                                               │
-  　     │ [ ] alsa-server                                                                │
-         │ [I] alsa-state                                                                 │
-         │ [ ] alsa-states                                                                │
-  　     │ [ ] alsa-utils                                                                 │
-         │ [ ] alsa-utils-aconnect                                                        │
-         │ [ ] alsa-utils-alsactl                                                         │
-         │ [ ] alsa-utils-alsaloop                                                        │
-         │ [ ] alsa-utils-alsamixer                                                       │
-         │ [I] alsa-utils-alsaucm                                                         │
-         │ [*] alsa-utils-amixer                                                          │
-         │ ------------------------------------------------------------------------------ │
-         │ All Packages [2503]    Installed Packages [2]    Selected Packages [1]         │
-         │ ------------------------------------------------------------------------------ │
-         │ SPACE/ENTER:select/unselect R:seaRch N:Next  B:Back  I:Info  X:eXit            │
-         └────────────────────────────────────────────────────────────────────────────────┘
+　       ------------------------------- Select package -----------------------------------
+         |                                                                                |
+  　　   | [ ] acl                                                                        |
+         | [ ] acpid                                                                      |
+         | [ ] adwaita-icon-theme                                                         |
+         | [ ] adwaita-icon-theme-cursors                                                 |
+         | [ ] adwaita-icon-theme-hires                                                   |
+         | [ ] adwaita-icon-theme-symbolic                                                |
+         | [ ] alsa-conf                                                                  |
+         | [ ] alsa-conf-base                                                             |
+         | [ ] alsa-lib                                                                   |
+         | [ ] alsa-plugins                                                               |
+         | [ ] alsa-plugins-pulseaudio-conf                                               |
+  　     | [ ] alsa-server                                                                |
+         | [I] alsa-state                                                                 |
+         | [ ] alsa-states                                                                |
+  　     | [ ] alsa-utils                                                                 |
+         | [ ] alsa-utils-aconnect                                                        |
+         | [ ] alsa-utils-alsactl                                                         |
+         | [ ] alsa-utils-alsaloop                                                        |
+         | [ ] alsa-utils-alsamixer                                                       |
+         | [I] alsa-utils-alsaucm                                                         |
+         | [*] alsa-utils-amixer                                                          |
+         | ------------------------------------------------------------------------------ |
+         | All Packages [2503]    Installed Packages [2]    Selected Packages [1]         |
+         | ------------------------------------------------------------------------------ |
+         | SPACE/ENTER:select/unselect R:seaRch N:Next  B:Back  I:Info  X:eXit            |
+         ----------------------------------------------------------------------------------
 
         Note
           -  [] Means the package has not been selected and installed. If you want to install it, you can 
