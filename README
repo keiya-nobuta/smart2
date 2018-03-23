@@ -90,7 +90,7 @@
 
       You should construct the environment before doing install/remove/search operations. 
 
-      Smart2 provides a script named enviroment-smart.sh to do it automaticly.
+      Smart2 provides a script named environment-smart.sh to do it automatically.
       It can help you to complete the following jobs:
         - Build pseudo environment.
         - Configure DB settings for packages sources (e.g. rpm, deb).
@@ -99,9 +99,9 @@
    
       You can configure your smart2 environment as the following: 
       -------------------------------------------------------------------
-       $ . enviroment-smart.sh ROOTFS_DIR PACKAGES_DIR
+       $ . environment-smart.sh ROOTFS_DIR PACKAGES_DIR
       -------------------------------------------------------------------
-      There must be two parameters for enviroment-smart.sh:
+      There must be two parameters for environment-smart.sh:
 
       1) ROOTFS_DIR: The rootfs directory where you want to install packages.
 
@@ -140,7 +140,7 @@
 
         You can configure your smart2 environment for x86 by the following:
         -------------------------------------------------------------------
-         $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
+         $ . environment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
         -------------------------------------------------------------------
 
          Note
@@ -164,7 +164,7 @@
        $ smart --rootfs-dir=$ROOTFS_DIR  --interface=tgui
       -------------------------------------------------------------------
       Note
-        --rootfs-dir: rootfs directory that specified by enviroment-smart.sh.
+        --rootfs-dir: rootfs directory that specified by environment-smart.sh.
 
       After execute the above command, you can enter the interface of tgui:
       
@@ -272,7 +272,7 @@
 
             For example:
             -------------------------------------------------------------------
-             $ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
+             $ . environment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm
              $ smart --rootfs-dir=/home/test/x86_rootfs  --interface=tgui
              $ cd /home/test/
              $ tar cvf - x86-rootfs | (cd $DEST_DIR ;sudo tar xvf - --numeric-owner)
