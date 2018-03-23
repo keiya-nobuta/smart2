@@ -10,6 +10,6 @@ Plan
 - support python3
 - manage srpm packages
 - manage remote packages
-- try to add enviroment-smart.sh into smart2
+- try to add environment-smart.sh into smart2
 - sort packages from a~z
 - 

@@ -154,7 +154,7 @@ setup(name="smart",
 Smart Package Manager is a next generation package handling tool.
 """,
       packages = packages,
-      scripts = ["smart.py","enviroment-smart.sh"],
+      scripts = ["smart.py","environment-smart.sh"],
       ext_modules = ext_modules,
       data_files = [(PYTHONLIB+"/smart/interfaces/images", 
                      glob.glob("smart/interfaces/images/*.png")),

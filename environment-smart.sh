@@ -7,7 +7,7 @@ PKGS_DIR=$2
 #Check the parameters
 if [ -z "$2" -o $1 = "--help" -o $1 = "-h" -o $1 = "-H" ]; then
     echo ""
-    echo "usage:     \$ . enviroment-smart.sh rootfs_dir packages_dir "
+    echo "usage:     \$ . environment-smart.sh rootfs_dir packages_dir "
     echo "Add channels from the sources in packages_dir,and build the enviroment for target rootfs directory."
     echo ""
     echo "#For example"
@@ -16,7 +16,7 @@ if [ -z "$2" -o $1 = "--help" -o $1 = "-h" -o $1 = "-H" ]; then
     echo "     all  i586  qemux86"
     echo "And you want to manage(e.g. install/remove/search) these packages on your host machain."
     echo "First, you should use the following command to set up your smart environment"
-    echo "     \$ . enviroment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm "
+    echo "     \$ . environment-smart.sh /home/test/x86_rootfs /home/test/x86_rpm "
     echo "Then, you can manange target packages for target rootfs:"
     echo "     \$ smart --rootfs-dir=/home/test/x86-rootfs install pkgname"
     echo "     \$ smart --rootfs-dir=/home/test/x86-rootfs remove pkgname"

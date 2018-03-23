@@ -337,13 +337,13 @@ index 0000000..4f149d2
 +
 +Signed-off-by: Zheng Ruoqin <zhengrq.fnst@cn.fujitsu.com>
 +---
-+ enviroment-smart.sh | 10 ++++++++++
++ environment-smart.sh | 10 ++++++++++
 + 1 file changed, 10 insertions(+)
 +
-+diff --git a/enviroment-smart.sh b/enviroment-smart.sh
++diff --git a/environment-smart.sh b/environment-smart.sh
 +index cae0f4b..70e3ce6 100755
-+--- a/enviroment-smart.sh
-++++ b/enviroment-smart.sh
++--- a/environment-smart.sh
+++++ b/environment-smart.sh
 +@@ -171,6 +171,16 @@ for arch in $DISTRO_ARCHS; do
 +         $SMART channel --add $arch type=rpm-md baseurl="$PKGS_DIR/$arch" -y
 +         #echo $?
@@ -1769,7 +1769,7 @@ index 861910c..c0e8b41 100644
 -        add_native_wrapper
 +        add_native_or_sdk_wrapper "sdk"
 +        install -d ${D}${bindir}/
-+        install -m 0755 ${S}/enviroment-smart.sh ${D}${bindir}/
++        install -m 0755 ${S}/environment-smart.sh ${D}${bindir}/
  }
  
  PACKAGES = "${PN}-dev ${PN}-dbg ${PN}-doc smartpm \
