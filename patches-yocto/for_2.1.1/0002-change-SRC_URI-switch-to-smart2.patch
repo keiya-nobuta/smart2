@@ -124,7 +124,7 @@ index f030b3e..dbac25d 100644
 -        add_native_wrapper
 +        add_native_or_sdk_wrapper "sdk"
 +        install -d ${D}${bindir}/
-+        install -m 0755 ${S}/enviroment-smart.sh ${D}${bindir}/
++        install -m 0755 ${S}/environment-smart.sh ${D}${bindir}/
  }
  
  PACKAGES = "${PN}-dev ${PN}-dbg ${PN}-doc smartpm \
